@@ -5676,7 +5676,15 @@ async function recPlay(rec, opts={}){
             if(Math.abs(viewPan.x - px) > 0.5 || Math.abs(viewPan.y - py) > 0.5){ viewPan.x += (px - viewPan.x)*kp; viewPan.y += (py - viewPan.y)*kp; applyPan(); }
             G2 = tgt; P2 = tgt.clone().addScaledVector(dir, Math.max(best.d, 0.25));   /* centred in the free area, complete, not cropped */
           } }
-        sm.p.lerp(P2, k); sm.g.lerp(G2, k);
+        const camOn = pad.classList.contains("open") && P.app==="camera" && P.cam && typeof qrWorld==="function"; if(!camOn) rp.camAt = 0; else if(!rp.camAt) rp.camAt = v;
+        let kCam = k; if(camOn && v - rp.camAt > 1500){   /* after a moment, the iPad camera is moved to the QR code on the rear label, as a person would aim it */
+          kCam = 1 - Math.exp(-dt/700); const gEl = document.getElementById("vfguide"); if(gEl){ const gr = gEl.getBoundingClientRect(), cr = renderer.domElement.getBoundingClientRect();
+            if(gr.width > 20){ const {p, n} = qrWorld(), tv = Math.tan(THREE.MathUtils.degToRad(camera.fov)/2);
+              const d = Math.max(0.12, CAMQ.size * cr.height / (2 * tv * 0.62 * gr.width)), dir = n.clone(); dir.y += 0.10; dir.normalize();
+              G2 = p.clone(); P2 = p.clone().addScaledVector(dir, d);
+              const px = gr.left + gr.width/2 - (cr.left + cr.width/2), py = gr.top + gr.height/2 - (cr.top + cr.height/2), kp = kCam;
+              viewPan.x += (px - viewPan.x)*kp; viewPan.y += (py - viewPan.y)*kp; applyPan(); } } }
+        sm.p.lerp(P2, kCam); sm.g.lerp(G2, kCam);
         camTween = null; viewMode = "case"; CASE_AT.x = sm.g.x; CASE_AT.y = sm.g.y; CASE_AT.z = sm.g.z; controls.target.copy(sm.g); lastFocus.copy(sm.g); camera.position.copy(sm.p); camera.lookAt(sm.g); }
       const end = Math.max(rec.duration, ...caps.map(x=>x.t*1000 + 1500));
       if(ei >= evs.length && ci >= caps.length && !speaking && v >= Math.min(end, (evs.length ? evs[evs.length-1].t : 0) + 2500)){ done = true; resolve(); return; }
