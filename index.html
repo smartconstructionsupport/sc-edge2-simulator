@@ -296,6 +296,8 @@ body.train .ctlsec,body.chal .ctlsec{display:none}body.builder .ctlsec{display:b
 .ios .ahs p{margin:8px 10px 12px;color:#666}
 #demoBlock{position:fixed;inset:0;z-index:9997;background:transparent;cursor:default}
 body.demo-on .taptag{display:none!important}
+#demoPanelShade{position:fixed;inset:0;z-index:9995;background:rgba(10,14,20,.45);cursor:default}
+#demoPanelShade[hidden]{display:none}
 #demoPanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9996;width:min(560px,92vw);max-height:86vh;overflow:auto;background:var(--panel,#f4f4f1);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.35);padding:18px 20px}
 #demoPanel .dph{display:flex;justify-content:space-between;align-items:center;gap:10px}#demoPanel h2{margin:0}#demoPanel p{font-size:14px;color:var(--muted)}
 #demoPanel .dprec{margin:10px 0 0;padding:9px 12px;border-radius:10px;background:#fff7dc;color:#3a3010;border:1px solid #f0d27a;font-size:13.5px;line-height:1.45}#demoPanel .dprec button{margin-left:6px;padding:3px 10px}
@@ -5690,7 +5692,10 @@ async function recPlayFile(file){ try { const rec = JSON.parse(await file.text()
 
 /* ---------- Demo mode: a list of scenarios with Play buttons; while a demo plays, the page ignores the user's mouse, touch and keys ---------- */
 const DEMO_LIB = [ {id:"office", steps:()=>DEMO_STEPS} ].concat(Object.keys(DEMO_SCN).map(id=>({id, steps:()=>DEMO_SCN[id]})));
-const demoPanel = (()=>{ const d = document.createElement("div"); d.id = "demoPanel"; d.hidden = true; document.body.appendChild(d); return d; })();
+const demoPanel = (()=>{ const d = document.createElement("div"); d.id = "demoPanel"; d.hidden = true; document.body.appendChild(d); return d; })(); { /* while the lesson list is open, the scene behind it can't be clicked, dragged or zoomed */
+  const sh = document.createElement("div"); sh.id = "demoPanelShade"; sh.hidden = true; document.body.insertBefore(sh, demoPanel);
+  ["pointerdown","pointerup","pointermove","mousemove","click","dblclick","wheel","contextmenu","touchstart","touchmove"].forEach(t=>sh.addEventListener(t, e=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false}));
+  new MutationObserver(()=>{ sh.hidden = demoPanel.hidden; }).observe(demoPanel, {attributes:true, attributeFilter:["hidden"]}); }
 const demoBlock = (()=>{ const d = document.createElement("div"); d.id = "demoBlock"; d.hidden = true; d.title = ""; document.body.appendChild(d);
   ["pointerdown","pointerup","pointermove","click","dblclick","wheel","contextmenu","touchstart","touchmove"].forEach(ev=>d.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false}));
   return d; })();
