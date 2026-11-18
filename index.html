@@ -2488,7 +2488,7 @@ function update(t){
   // animations
   const ease = (v,target,k=0.14)=> reduceMotion ? target : v+(target-v)*k;
   screws.forEach(sc=>{ sc.a = ease(sc.a, sc.loose?4*PI:0, 0.1); sc.out = ease(sc.out, sc.loose?0.032:0); sc.head.rotation.z = sc.a; sc.head.position.z = sc.out; });
-  BATT.cz = ease(BATT.cz, BATT.on?0:0.55); bayBits.forEach(c=>c.visible = BATT.cz>0.02); lidG.position.set(BATT.cz*0.5, -BATT.cz*0.05, -BATT.cz*0.75);
+  BATT.cz = ease(BATT.cz, BATT.on?0:0.55); bayBits.forEach(c=>c.visible = BATT.cz>0.02); lidG.position.set(BATT.cz*0.4, -BATT.cz*0.05, -BATT.cz*2.45);
   packs.forEach(p=>{ p.z = ease(p.z, p.inside?0:0.8); p.slide.position.z = p.z; p.slide.visible = !p.kit; });
   if(!done.install && packs.every(p=>p.inside) && BATT.on && screws.every(sc=>!sc.loose)){ done.install = true; say("Batteries installed","Both batteries are in, the lid is on and both screws are tight. Next, hold the glowing power button to switch on and check the battery level.",6000); }
   Object.values(doors).forEach(d=>{ d.a = ease(d.a, d.open?2.75:0); d.pivot.rotation.x = d.a; });
