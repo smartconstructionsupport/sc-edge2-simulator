@@ -982,7 +982,9 @@ html,body{max-width:100%;overflow-x:hidden}
   .toolbar button,.kit .chip,.kit.actions button{font-size:12px;padding:5px 8px;min-height:32px}
   .kit.actions{bottom:56px}
 }
-.themebtn{margin-left:10px;padding:2px 10px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font:inherit;font-size:12px;cursor:pointer;vertical-align:baseline}
+.disclaimer{position:relative;padding-left:140px;padding-right:140px}
+.themebtn{position:absolute;right:12px;top:50%;transform:translateY(-50%);padding:3px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+@media (max-width:700px){.disclaimer{padding-left:12px;padding-right:12px;padding-bottom:34px}.themebtn{top:auto;bottom:6px;transform:none}}
 .themebtn:hover{border-color:var(--accent)}
 /* drag handle between the instruction panel and the 3D view: drag to widen or narrow the panel */
 .panelGrip{display:none;position:absolute;top:0;bottom:0;left:calc(var(--panelW,400px) - 8px);width:16px;z-index:30;cursor:col-resize;touch-action:none;background:transparent;border:0;padding:0}
