@@ -36,7 +36,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 @media (min-width:900px){
   html,body{height:100%}
   body{display:flex;flex-direction:column}
-  .app{flex:1;min-height:0;height:auto;grid-template-rows:none;grid-template-columns:400px 1fr}
+  .app{flex:1;min-height:0;height:auto;grid-template-rows:none;grid-template-columns:var(--panelW,400px) 1fr;position:relative}
+  .panelGrip{display:block}
   .panel{overflow-y:auto;order:-1;border-left:0;border-right:1px solid var(--line)}
 }
 .disclaimer{flex:none;margin:0;padding:7px 16px;font-size:13px;line-height:1.35;text-align:center;color:var(--muted);background:var(--surface);border-top:1px solid var(--line)}
@@ -981,8 +982,18 @@ html,body{max-width:100%;overflow-x:hidden}
 }
 .themebtn{margin-left:10px;padding:2px 10px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font:inherit;font-size:12px;cursor:pointer;vertical-align:baseline}
 .themebtn:hover{border-color:var(--accent)}
+/* drag handle between the instruction panel and the 3D view: drag to widen or narrow the panel */
+.panelGrip{display:none;position:absolute;top:0;bottom:0;left:calc(var(--panelW,400px) - 8px);width:16px;z-index:30;cursor:col-resize;touch-action:none;background:transparent;border:0;padding:0}
+.panelGrip::after{content:"";position:absolute;left:4px;top:50%;width:8px;height:56px;margin-top:-28px;border-radius:5px;background:var(--surface) radial-gradient(circle,var(--muted) 1.2px,transparent 1.6px) center/8px 8px repeat-y;border:1px solid var(--line);box-shadow:0 1px 4px rgba(0,0,0,.25);transition:background-color .15s,border-color .15s,height .15s,margin-top .15s}
+body.demo-on .panelGrip{z-index:9998}
+@media (min-width:900px){.panelGrip{display:block}}
+.panelGrip:hover::after,.panelGrip:focus-visible::after,.panelGrip.drag::after{border-color:var(--accent);height:80px;margin-top:-40px}
+.panelGrip:focus-visible{outline:none}
+body.panel-dragging{cursor:col-resize;user-select:none}
+body.panel-dragging iframe,body.panel-dragging canvas{pointer-events:none}
 </style>
-<script>/* display mode: dark by default, light/normal on request (remembered on this device) */
+<script>try { const w = +localStorage.getItem("edge2-panelw"); if(w >= 260 && w <= 900) document.documentElement.style.setProperty("--panelW", w + "px"); } catch(e){}
+/* display mode: dark by default, light/normal on request (remembered on this device) */
 try { document.documentElement.dataset.theme = localStorage.getItem("edge2-theme") === "light" ? "light" : "dark"; } catch(e){ document.documentElement.dataset.theme = "dark"; }</script>
 </head>
 <body>
@@ -1104,6 +1115,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("edge2-theme
     <div class="callout" id="callout" role="status" aria-live="polite"><b id="cTitle"></b><p id="cText"></p><div class="meter"><i id="cMeter"></i></div></div>
   </section>
 
+  <button type="button" class="panelGrip" id="panelGrip" role="separator" aria-orientation="vertical" aria-label="Resize the instruction panel (drag, or use the arrow keys; double-click to reset)" title="Drag to resize the panel · double-click to reset"></button>
   <aside class="panel">
     <h1>Hands-on practice</h1>
     <p class="moderow">Mode: <b id="modeName">Training</b><button type="button" id="modeBtn">Change mode</button></p>
@@ -1290,6 +1302,20 @@ const done = { install:false, lowon:false, charge:false, officeoff:false, box:fa
   base:false, ctrl:false, flyb:false, tape:false, app2:false, homeicon:false, simfirst:false, apnset:false, simin:false, ltechk:false, basen:false, ntripchk:false, pwroff:false, unmount:false, sdout:false, sdin:false, usbin:false, basestop:false, pcppk:false, pcrtk:false, pcppkgcp:false, pcrtkgcp:false, pcgcp:false, vck:false, ck3:false, gcpacc:false, export:false, pc:false, seal:false, swap:false, off:false };
 const blink = (t,p)=> (t % p) < p/2;
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+{ const g = document.getElementById("panelGrip"), root = document.documentElement;
+  const minW = 260, maxW = ()=> Math.max(minW, Math.min(900, Math.round(innerWidth*0.55)));
+  const cur = ()=> parseFloat(getComputedStyle(root).getPropertyValue("--panelW")) || 400;
+  let raf = 0; const notify = ()=>{ if(raf) return; raf = requestAnimationFrame(()=>{ raf = 0; dispatchEvent(new Event("resize")); }); };
+  const setW = (w, save)=>{ w = Math.round(Math.max(minW, Math.min(maxW(), w))); root.style.setProperty("--panelW", w + "px"); g.setAttribute("aria-valuenow", w); notify(); if(save) try { localStorage.setItem("edge2-panelw", w); } catch(e){} };
+  if(g){ g.setAttribute("aria-valuemin", minW); g.setAttribute("aria-valuenow", cur());
+    let drag = null;
+    g.addEventListener("pointerdown", e=>{ e.preventDefault(); g.setPointerCapture(e.pointerId); drag = {x: e.clientX, w: cur()}; g.classList.add("drag"); document.body.classList.add("panel-dragging"); });
+    g.addEventListener("pointermove", e=>{ if(drag) setW(drag.w + e.clientX - drag.x); });
+    const end = ()=>{ if(!drag) return; drag = null; g.classList.remove("drag"); document.body.classList.remove("panel-dragging"); setW(cur(), true); };
+    g.addEventListener("pointerup", end); g.addEventListener("pointercancel", end);
+    g.addEventListener("dblclick", ()=>{ root.style.removeProperty("--panelW"); try { localStorage.removeItem("edge2-panelw"); } catch(e){} notify(); });
+    g.addEventListener("keydown", e=>{ const st = e.shiftKey ? 60 : 20; if(e.key==="ArrowLeft"){ e.preventDefault(); setW(cur() - st, true); } else if(e.key==="ArrowRight"){ e.preventDefault(); setW(cur() + st, true); } });
+    addEventListener("resize", ()=>{ if(!drag && cur() > maxW()) root.style.setProperty("--panelW", maxW() + "px"); }); } }
 { const tb = document.getElementById("themeBtn"); const lab = ()=>{ const d = document.documentElement.dataset.theme !== "light"; tb.textContent = d ? "☀ Light mode" : "☾ Dark mode"; tb.setAttribute("aria-label", d ? "Switch to light display mode" : "Switch to dark display mode"); };
   if(tb){ lab(); tb.addEventListener("click", ()=>{ const t = document.documentElement.dataset.theme === "light" ? "dark" : "light"; document.documentElement.dataset.theme = t; try { localStorage.setItem("edge2-theme", t); } catch(e){} lab(); }); } }
 // while the demo jumps along the timeline, the simulator's own waits (loading spinners, scans) are shortened so the jump is quick
