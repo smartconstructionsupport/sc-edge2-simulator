@@ -40,7 +40,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
   .panelGrip{display:block}
   .panel{overflow-y:auto;order:-1;border-left:0;border-right:1px solid var(--line)}
 }
-.disclaimer{flex:none;margin:0;padding:7px 16px;font-size:13px;line-height:1.35;text-align:center;color:var(--muted);background:var(--surface);border-top:1px solid var(--line)}
+.disclaimer{flex:none;margin:0;padding:7px 16px;font-size:13px;line-height:1.35;text-align:center;color:var(--muted);background:var(--surface);border-bottom:1px solid var(--line)}
 .disclaimer b{color:var(--ink);font-weight:600}
 .stage{position:relative;background:var(--stage);overflow:hidden;min-height:340px}
 .stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
@@ -999,6 +999,7 @@ body.panel-dragging iframe,body.panel-dragging canvas{pointer-events:none}
 try { document.documentElement.dataset.theme = localStorage.getItem("edge2-theme") === "light" ? "light" : "dark"; } catch(e){ document.documentElement.dataset.theme = "dark"; }</script>
 </head>
 <body>
+<p class="disclaimer" role="note"><b>Training use only.</b> This 3D model is a simplified training aid and does not exactly reflect the actual product. Always refer to the SC Edge 2 user manual and the real unit. <span class="relver" id="relVer"></span><button type="button" class="themebtn" id="themeBtn"></button></p>
 <div class="app">
   <section class="stage" id="stage" aria-label="3D model of the SC Edge 2">
     <div class="rain" id="rain"></div>
@@ -1203,7 +1204,6 @@ try { document.documentElement.dataset.theme = localStorage.getItem("edge2-theme
     <p class="note">Part names, the 4-second power hold, Status LED behavior, charging colors, the Wi-Fi steps, PPK timing, tripod thread and safety rules come from the SC Edge 2 user manual (v12.5.1). The manual doesn’t define every light pattern, so the GNSS, PPK and error light patterns here are placeholders. Times are shortened: the 3-minute GNSS wait, point cloud generation and the 5-hour charge each take seconds.</p>
   </aside>
 </div>
-<p class="disclaimer" role="note"><b>Training use only.</b> This 3D model is a simplified training aid and does not exactly reflect the actual product. Always refer to the SC Edge 2 user manual and the real unit. <span class="relver" id="relVer"></span><button type="button" class="themebtn" id="themeBtn"></button></p>
 
 <div class="modepick" id="modePick" role="dialog" aria-modal="true" aria-labelledby="modeH">
   <div class="modecard">
@@ -1237,7 +1237,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("edge2-theme
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 /* ============ EDIT HERE: behavior and wording ============ */
-const RELEASE = { version:"1.0.0", date:"29 Oct 2026", manual:"User Manual v12.5.1", app:"Edge 2 app 12.5.1" };
+const RELEASE = { version:"1.0.0", date:"19 Nov 2026", manual:"User Manual v12.5.1", app:"Edge 2 app 12.5.1" };
 const CONFIG = {
   holdMs: 4000,           // manual: press and hold the power button for about 4 seconds, to switch on and to shut down
   bootMs: 7000,           // Status LED flashes green while starting (shortened)
