@@ -339,7 +339,7 @@ body.demo-on .taptag{display:none!important}
 #demoCap{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9998;max-width:min(900px,80vw);background:rgba(15,20,30,.86);color:#fff;font:600 17px/1.45 inherit;padding:10px 16px;border-radius:10px;text-align:center;pointer-events:none}
 #demoBar{position:fixed;left:12px;bottom:12px;z-index:9999;display:flex;gap:6px;align-items:center;background:rgba(15,20,30,.85);color:#fff;padding:6px 8px;border-radius:8px;font-size:12px}
 #demoSeekWrap{display:inline-flex;align-items:center;gap:6px}#demoSeek{width:min(420px,36vw);accent-color:#F2B705;cursor:pointer}#demoDur{font-variant-numeric:tabular-nums;opacity:.8}
-#demoSeeking{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;background:rgba(15,20,30,.35);color:#fff;font:600 18px/1.3 inherit}
+#demoSeeking{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;align-content:center;gap:14px;background:#1b2430;color:#fff;font:600 18px/1.3 inherit}#demoSeeking .bar{width:min(420px,70vw);height:6px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}#demoSeeking .bar i{display:block;height:100%;width:0;background:#f2b134;transition:width .1s linear}
 #demoBar.paused #demoClock{animation:demoBlink 1s steps(2) infinite}@keyframes demoBlink{50%{opacity:.3}}#demoPause.on{background:#F2B705;color:#1d2330;font-weight:700}
 body.demo-on{box-sizing:border-box;padding-bottom:var(--demoBarH,48px)}
 body.demo-on #demoBar{left:0!important;right:0;bottom:0!important;border-radius:0;padding:8px 14px;gap:10px;background:#11151d;flex-wrap:nowrap;box-shadow:0 -4px 16px rgba(0,0,0,.25)}
@@ -1286,6 +1286,11 @@ const done = { install:false, lowon:false, charge:false, officeoff:false, box:fa
   base:false, ctrl:false, flyb:false, tape:false, app2:false, homeicon:false, simfirst:false, apnset:false, simin:false, ltechk:false, basen:false, ntripchk:false, pwroff:false, unmount:false, sdout:false, sdin:false, usbin:false, basestop:false, pcppk:false, pcrtk:false, pcppkgcp:false, pcrtkgcp:false, pcgcp:false, vck:false, ck3:false, gcpacc:false, export:false, pc:false, seal:false, swap:false, off:false };
 const blink = (t,p)=> (t % p) < p/2;
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+// while the demo jumps along the timeline, the simulator's own waits (loading spinners, scans) are shortened so the jump is quick
+{ const _st = window.setTimeout.bind(window); window.__seekEpoch = 0;
+  window.setTimeout = (fn, ms, ...a)=>{ if(typeof fn!=="function") return _st(fn, ms, ...a); const ep = window.__seekEpoch;
+    /* a wait left over from before the jump must not change the scenario while it is being rebuilt */
+    return _st((...b)=>{ if(window.__seekSnap && ep !== window.__seekEpoch) return; fn(...b); }, window.__seekSnap ? Math.min(+ms || 0, 25) : ms, ...a); }; }
 const PI = Math.PI;
 
 /* ---------- scene ---------- */
@@ -2486,7 +2491,7 @@ function update(t){
     else { S.sealedAt = 0; if(t-rainNag > 9000){ rainNag = t; say("It’s raining", "Close every opening: "+openList().join(", ")+".", 7000, true); } }
   }
   // animations
-  const ease = (v,target,k=0.14)=> reduceMotion ? target : v+(target-v)*k;
+  const ease = (v,target,k=0.14)=> (reduceMotion || window.__seekSnap) ? target : v+(target-v)*k;
   screws.forEach(sc=>{ sc.a = ease(sc.a, sc.loose?4*PI:0, 0.1); sc.out = ease(sc.out, sc.loose?0.032:0); sc.head.rotation.z = sc.a; sc.head.position.z = sc.out; });
   BATT.cz = ease(BATT.cz, BATT.on?0:0.55); bayBits.forEach(c=>c.visible = BATT.cz>0.02); lidG.position.set(BATT.cz*0.4, -BATT.cz*0.05, -BATT.cz*2.45);
   packs.forEach(p=>{ p.z = ease(p.z, p.inside?0:0.8); p.slide.position.z = p.z; p.slide.visible = !p.kit; });
@@ -5484,26 +5489,34 @@ async function recPlay(rec, opts={}){
   let seeking = false, dragging = false;
   // while jumping, recorded time passes in an instant: age every timer the simulator waits on by the recorded gap
   const ageClocks = ms=>{ if(!(ms > 0)) return;
-    for(const [o,k] of [[S,"ppkAt"],[S,"droneOffAt"],[S,"bootAt"],[S,"offAt"],[AP,"ppkReadyAt"],[P,"scanUntil"]]) if(o && typeof o[k]==="number" && o[k] > 0) o[k] -= ms;
+    const L = [[AP,"ppkReadyAt"],[P,"scanUntil"]]; Object.keys(S).forEach(k=>{ if(/(At|Since)$/.test(k)) L.push([S,k]); }); if(AP.bsc) L.push([AP.bsc,"at"]); (AP.exports||[]).forEach(x=>L.push([x,"at"]));
+    for(const [o,k] of L) if(o && typeof o[k]==="number" && o[k] > 0) o[k] -= ms;
     try { if(typeof flyAt==="number" && flyAt > 0) flyAt -= ms; } catch(e){} };
-  const settle = ()=>{ if(S.power==="booting") S.bootAt = performance.now() - 60000; if(S.power==="shutting") S.offAt = performance.now() - 60000; };
+  const settle = ()=>{ if(S.power==="booting") S.bootAt = performance.now() - 60000; if(S.power==="shutting") S.offAt = performance.now() - 60000;
+    /* the iPad rejoins the saved Edge 2 Wi-Fi by itself once the unit is on (same rule as in the simulator) */ if(S.ipadSaved && S.power==="on" && P.wifiOn && S.wifi!==CONFIG.serial && !P.connecting){ S.wifi = CONFIG.serial; done.wifi = true; } };
   // jump to any moment: start the scenario again and redo every action up to that moment, quickly and silently
   DEMO.seek = async (target)=>{ DEMO.wall = target * wRatio;
     if(seeking) return; seeking = true; target = Math.max(0, Math.min(total, target));
-    const ov = document.createElement("div"); ov.id = "demoSeeking"; ov.textContent = `Jumping to ${fmt(target)}…`; document.body.appendChild(ov);
+    const ov = document.createElement("div"); ov.id = "demoSeeking"; ov.innerHTML = `<div class="lbl">Jumping to ${fmt(target)}…</div><div class="bar"><i></i></div>`; document.body.appendChild(ov); const ovBar = ov.querySelector(".bar i"); window.__seekEpoch++; window.__seekSnap = true; { const fb = document.getElementById("demoFail"); if(fb) fb.hidden = true; }
     if(hasTTS) speechSynthesis.cancel(); lessonShow(null); bubInset(null); if(rp.dhl && rp.dhl.el) rp.dhl.el.classList.remove("dz-hl"); rp.dhl = null; demoCap.textContent = ""; focus = null; rp.zoom = null; pad.classList.remove("demo-away");
-    Math.random = seededRandom(rec.seed || 1); recReset(rec.scenario); { const c0 = document.getElementById("callout"); if(c0) c0.classList.remove("show","pop"); } await new Promise(r=>setTimeout(r, 350));
-    rp.pressT = null; rp.typed = {}; let prevT = 0, k = 0, failed = null;
+    Math.random = seededRandom(rec.seed || 1); recReset(rec.scenario); { const c0 = document.getElementById("callout"); if(c0) c0.classList.remove("show","pop"); } await new Promise(r=>setTimeout(r, 120));
+    rp.pressT = null; rp.typed = {}; let prevT = 0, k = 0, failed = null, lastAct = null; const nTo = Math.max(1, evs.filter(e=>e.t<=target).length);
     for(; k < evs.length && evs[k].t <= target; k++){ const ev = evs[k];
       if(S.ac){ const add = (CONFIG.chargePerSec || 2) * (ev.t - prevT)/1000; packs.forEach(p=>{ if(p.inside) p.pct = Math.min(100, p.pct + add); }); }
-      ageClocks(ev.t - prevT); prevT = ev.t;
+      { const gap = ev.t - prevT; ageClocks(gap); prevT = ev.t; if(gap > 300) await new Promise(r=>requestAnimationFrame(r)); /* let the simulator see the time that passed (warnings, timers) before the next action */ }
       // wait (briefly) for the screen this action needs: Wi-Fi scan, page loads, dialogs
-      if(ev.sel){ const t0 = performance.now(); while(!document.querySelector(ev.sel) && performance.now() - t0 < 3000){ await new Promise(r=>setTimeout(r, 60)); if(typeof renderPad==="function") renderPad(); } }
+      if(ev.sel){ const t0 = performance.now(); let again = !!lastAct; while(!document.querySelector(ev.sel) && performance.now() - t0 < 3000){ await new Promise(r=>setTimeout(r, 40)); if(again && performance.now() - t0 > 1200){ again = false; /* the previous action may have been lost on a changing screen: repeat it */ if(!lastAct.sel || document.querySelector(lastAct.sel)) doEvent(lastAct); } if(typeof renderPad==="function") renderPad(); try { if(pad.classList.contains("open") && typeof renderApp==="function") renderApp(); } catch(e){} } }
       if(ev.k==="need"){ let ok = false; const wmax = Math.min(250, Math.max(30, Math.round((ev.wait || 3000)/100))); for(let w = 0; w < wmax && !ok; w++){ try { ok = !!(new Function("return (" + ev.cond + ")"))(); } catch(e){} if(!ok) await new Promise(r=>setTimeout(r, 100)); }
+        if(!ok && lastAct){ /* the action may have landed on a screen that was still changing: do it once more */
+          if(lastAct.sel){ const t1 = performance.now(); while(!document.querySelector(lastAct.sel) && performance.now() - t1 < 3000){ await new Promise(r=>setTimeout(r, 40)); try { if(pad.classList.contains("open") && typeof renderApp==="function") renderApp(); } catch(e){} } }
+          doEvent(lastAct); settle(); for(let w = 0; w < 40 && !ok; w++){ await new Promise(r=>setTimeout(r, 100)); try { ok = !!(new Function("return (" + ev.cond + ")"))(); } catch(e){} } }
         if(!ok){ failed = ev; target = ev.t - 1; break; } continue; }
-      doEvent(ev); settle();
-      await new Promise(r=>setTimeout(r, ev.k==="input" ? 10 : 90)); settle();
-      ov.textContent = `Jumping to ${fmt(target)}… ${Math.round(100*k/Math.max(1, evs.filter(e=>e.t<=target).length))}%`; }
+      if(ev.k==="click" && ev.sel==="#padBtn"){ /* the iPad button toggles: during a jump, make it end up the way the next actions need it */
+        let nx = null; for(let j = k+1; j < evs.length; j++){ if(evs[j].k==="click" || evs[j].k==="tap"){ nx = evs[j]; break; } }
+        const want = !!(nx && nx.sel && /^#pad[ H]|^#padHome/.test(nx.sel)); if(pad.classList.contains("open") === want){ settle(); continue; } }
+      doEvent(ev); settle(); if(ev.k==="click") lastAct = ev;
+      if(ev.k!=="input") await new Promise(r=>requestAnimationFrame(r)); settle();
+      if(ovBar) ovBar.style.width = Math.round(100*k/nTo) + "%"; }
     if(S.ac){ const add = (CONFIG.chargePerSec || 2) * (target - prevT)/1000; packs.forEach(p=>{ if(p.inside) p.pct = Math.min(100, p.pct + add); }); }
     ageClocks(target - prevT); ei = k; cursorFor = k - 1;
     // narration resumes from the line in progress; the card that belongs to that moment is shown
@@ -5516,6 +5529,7 @@ async function recPlay(rec, opts={}){
         else { const o = LOOK[nm] && LOOK[nm](); if(o){ const w = new THREE.Vector3(); o.getWorldPosition(w); focus = {o, w, dist: c0.look[1] || 1.4, until: c0.t*1000 + (c0.look[2] || 7)*1000, elev: c0.look[3]}; } } } break; }
     { const co0 = document.getElementById("callout"); if(co0) co0.classList.remove("show"); } if(li >= 0 && caps[li].t*1000 < target - 8000){ ci = li + 1; v = target; }
     const c = recCamAt(rec.cam, v); if(c){ sm.p.set(c[1],c[2],c[3]); sm.g.set(c[4],c[5],c[6]); }
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); window.__seekSnap = false;
     speakUntil = 0; lastNow = performance.now(); DEMO.t0 = performance.now() - v; ov.remove(); seeking = false; if(failed) demoFailShow(failed); };
   if(sk){ sk.oninput = ()=>{ dragging = true; document.getElementById("demoClock").textContent = fmt(+sk.value * wRatio); };
           sk.onchange = ()=>{ dragging = false; DEMO.seek(+sk.value); }; }
@@ -5632,7 +5646,7 @@ async function recPlay(rec, opts={}){
     requestAnimationFrame(step); });
   // demo projects never reach the learner's saved project list
   try { AP.mine = JSON.parse(localStorage.getItem("edge2-projs")||"[]"); _projSaved = JSON.stringify(AP.mine); } catch(e){}
-  Math.random = _rand; const finished = done && !DEMO.stop; bubInset(null); document.querySelectorAll(".dz-hl").forEach(x=>x.classList.remove("dz-hl")); afApply(false); if(finished && DEMO.rec && DEMO.rec.appFocus){ pad.classList.remove("open"); padBtn.setAttribute("aria-pressed", false); } pad.classList.remove("demo-away"); stageHide = false; if(rp.tidy){ U.visible = rp.tidy.u; CASE.visible = rp.tidy.c; rp.tidy = null; } { const fb = document.getElementById("demoFail"); if(fb) fb.hidden = true; } resetPan(); DEMO.seek = null; if(skw) skw.hidden = true;
+  Math.random = _rand; const finished = done && !DEMO.stop; bubInset(null); document.querySelectorAll(".dz-hl").forEach(x=>x.classList.remove("dz-hl")); afApply(false); if(finished && DEMO.rec && DEMO.rec.appFocus){ pad.classList.remove("open"); padBtn.setAttribute("aria-pressed", false); } pad.classList.remove("demo-away"); stageHide = false; if(rp.tidy){ U.visible = rp.tidy.u; CASE.visible = rp.tidy.c; rp.tidy = null; } { const fb = document.getElementById("demoFail"); if(fb) fb.hidden = true; } resetPan(); DEMO.seek = null; window.__seekSnap = false; if(skw) skw.hidden = true;
   DEMO.on = false; DEMO.rec = null; demoCur.hidden = true; demoBar.hidden = true; demoCap.hidden = true; demoBlock.hidden = true;
   if(hasTTS && !finished) speechSynthesis.cancel(); demoAudioStop(); if(pressAt!==null) pressEnd();
   demoCallout(true); document.body.classList.remove("demo-on"); if(typeof sizePad==="function") sizePad();
@@ -5894,7 +5908,7 @@ function frame(t){
   if(Math.abs(dzz)>1e-4){ controls.target.z += dzz; camera.position.z += dzz; if(camTween){ camTween.to.z += dzz; camTween.from.z += dzz; } }
   if(Math.abs(dy)>1e-4 || Math.abs(dxx)>1e-4){ controls.target.y += dy; controls.target.x += dxx; camera.position.y += dy; camera.position.x += dxx; if(camTween){ camTween.to.y += dy; camTween.from.y += dy; camTween.to.x += dxx; camTween.from.x += dxx; } }
   if(camTween){ const k = reduceMotion?1:Math.min(1,(t-camTween.t0)/700), e = k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2; camera.position.lerpVectors(camTween.from,camTween.to,e); if(k>=1) camTween=null; }
-  controls.update(); renderer.render(scene,camera); renderIpadCam(t); requestAnimationFrame(frame);
+  controls.update(); if(!window.__seekSnap){ renderer.render(scene,camera); renderIpadCam(t); } requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 renderPad();
