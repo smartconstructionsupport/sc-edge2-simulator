@@ -5533,7 +5533,7 @@ async function recPlay(rec, opts={}){
   // jump to any moment: start the scenario again and redo every action up to that moment, quickly and silently
   DEMO.seek = async (target)=>{ DEMO.wall = target * wRatio;
     if(seeking) return; seeking = true; target = Math.max(0, Math.min(total, target));
-    const ov = document.createElement("div"); ov.id = "demoSeeking"; ov.innerHTML = `<div class="lbl">Jumping to ${fmt(target)}…</div><div class="bar"><i></i></div>`; document.body.appendChild(ov); const ovBar = ov.querySelector(".bar i"); window.__seekEpoch++; window.__seekSnap = true; { const fb = document.getElementById("demoFail"); if(fb) fb.hidden = true; }
+    const ov = document.createElement("div"); ov.id = "demoSeeking"; ov.innerHTML = `<div class="lbl">Jumping to ${fmt(target * wRatio)}…</div><div class="bar"><i></i></div>`; document.body.appendChild(ov); const ovBar = ov.querySelector(".bar i"); window.__seekEpoch++; window.__seekSnap = true; { const fb = document.getElementById("demoFail"); if(fb) fb.hidden = true; }
     if(hasTTS) speechSynthesis.cancel(); lessonShow(null); bubInset(null); if(rp.dhl && rp.dhl.el) rp.dhl.el.classList.remove("dz-hl"); rp.dhl = null; demoCap.textContent = ""; focus = null; rp.zoom = null; pad.classList.remove("demo-away");
     Math.random = seededRandom(rec.seed || 1); recReset(rec.scenario); { const c0 = document.getElementById("callout"); if(c0) c0.classList.remove("show","pop"); } await new Promise(r=>setTimeout(r, 120));
     rp.pressT = null; rp.typed = {}; let prevT = 0, k = 0, failed = null, lastAct = null; const nTo = Math.max(1, evs.filter(e=>e.t<=target).length);
@@ -5574,10 +5574,13 @@ async function recPlay(rec, opts={}){
     const knobX = ()=>{ const r = sk.getBoundingClientRect(), th = 16, f = (+sk.value)/(+sk.max || 1); return r.left + th/2 + f*(r.width - th); };
     const valAt = x=>{ const r = sk.getBoundingClientRect(), th = 16; return Math.max(0, Math.min(+sk.max, ((x - r.left - th/2)/(r.width - th)) * +sk.max)); };
     sk.oninput = ()=>{ dragging = true; DEMO.dragging = true; showTip(+sk.value, knobX()); document.getElementById("demoClock").textContent = fmt(+sk.value * wRatio); };
-    sk.onpointerdown = ()=>{ dragging = true; DEMO.dragging = true; };
+    let downX = null, hoverVal = null;
+    sk.onpointerdown = e=>{ dragging = true; DEMO.dragging = true; downX = e.clientX; hoverVal = valAt(e.clientX); };
     sk.onpointermove = e=>{ if(dragging) showTip(+sk.value, knobX()); else showTip(valAt(e.clientX), e.clientX); };
     sk.onpointerleave = ()=>{ if(!dragging) tip.hidden = true; };
-    sk.onchange = ()=>{ dragging = false; DEMO.dragging = false; tip.hidden = true; DEMO.seek(+sk.value); };
+    sk.onchange = ()=>{ dragging = false; DEMO.dragging = false; tip.hidden = true;
+      if(downX !== null && hoverVal !== null && Math.abs(knobX() - downX) < 24) sk.value = Math.round(hoverVal);   /* a plain click jumps to exactly the time the bubble showed */
+      downX = hoverVal = null; DEMO.seek(+sk.value); };
     sk.onpointerup = sk.onpointercancel = ()=>{ setTimeout(()=>{ if(dragging && !seeking){ dragging = false; DEMO.dragging = false; tip.hidden = true; } }, 400); }; }
   await new Promise(resolve=>{
     const step = ()=>{
