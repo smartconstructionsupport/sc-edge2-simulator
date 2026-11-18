@@ -341,7 +341,7 @@ body.demo-on .taptag{display:none!important}
 #demoCur.hold i{opacity:1;transform:scale(1);animation:demoHold 1s ease-in-out infinite}@keyframes demoHold{50%{transform:scale(1.25)}}
 #demoCap{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9998;max-width:min(900px,80vw);background:rgba(15,20,30,.86);color:#fff;font:600 17px/1.45 inherit;padding:10px 16px;border-radius:10px;text-align:center;pointer-events:none}
 #demoBar{position:fixed;left:12px;bottom:12px;z-index:9999;display:flex;gap:6px;align-items:center;background:rgba(15,20,30,.85);color:#fff;padding:6px 8px;border-radius:8px;font-size:12px}
-#demoSeekWrap{display:inline-flex;align-items:center;gap:6px}#demoSeek{width:min(420px,36vw);accent-color:#F2B705;cursor:pointer}#demoDur{font-variant-numeric:tabular-nums;opacity:.8}
+#demoSeekWrap{display:inline-flex;align-items:center;gap:6px}#demoSeek{width:min(420px,36vw);accent-color:#F2B705;cursor:pointer}#demoDur{font-variant-numeric:tabular-nums;opacity:.8}#demoSeekTip{position:absolute;bottom:calc(100% + 8px);transform:translateX(-50%);padding:4px 9px;border-radius:7px;background:#F2B705;color:#1d2330;font:700 13px/1.2 inherit;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none;box-shadow:0 3px 10px rgba(0,0,0,.35);z-index:2}#demoSeekTip::after{content:"";position:absolute;left:50%;top:100%;margin-left:-5px;border:5px solid transparent;border-top-color:#F2B705}#demoSeekTip[hidden]{display:none}
 #demoSeeking{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;align-content:center;gap:14px;background:#1b2430;color:#fff;font:600 18px/1.3 inherit}#demoSeeking .bar{width:min(420px,70vw);height:6px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}#demoSeeking .bar i{display:block;height:100%;width:0;background:#f2b134;transition:width .1s linear}
 #demoBar.paused #demoClock{animation:demoBlink 1s steps(2) infinite}@keyframes demoBlink{50%{opacity:.3}}#demoPause.on{background:#F2B705;color:#1d2330;font-weight:700}
 body.demo-on{box-sizing:border-box;padding-bottom:var(--demoBarH,48px)}
@@ -4742,7 +4742,7 @@ function demoLayout(){ if(!DEMO.on){ document.body.classList.remove("demo-on"); 
   if(typeof resize==="function") resize(); }
 addEventListener("resize", ()=>{ if(DEMO.on) demoLayout(); });
 setInterval(()=>{ const on = document.body.classList.contains("demo-on"); if(DEMO.on !== on || (DEMO.on && Math.abs((demoBar.offsetHeight||48) - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--demoBarH")||48)) > 1)) demoLayout(); }, 300);
-function demoClock(){ if(!DEMO.on) return; if(DEMO.paused){ requestAnimationFrame(demoClock); return; } const sk = document.getElementById("demoSeek"); if(sk && document.activeElement === sk){ requestAnimationFrame(demoClock); return; } const sec = DEMO.rec && DEMO.rec.narrDur ? Math.floor((DEMO.wall||0)/1000) : Math.floor((performance.now()-DEMO.t0)/1000/DEMO.scale); document.getElementById("demoClock").textContent = `${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`; requestAnimationFrame(demoClock); }
+function demoClock(){ if(!DEMO.on) return; if(DEMO.paused){ requestAnimationFrame(demoClock); return; } const sk = document.getElementById("demoSeek"); if(sk && (document.activeElement === sk || DEMO.dragging)){ requestAnimationFrame(demoClock); return; } const sec = DEMO.rec && DEMO.rec.narrDur ? Math.floor((DEMO.wall||0)/1000) : Math.floor((performance.now()-DEMO.t0)/1000/DEMO.scale); document.getElementById("demoClock").textContent = `${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`; requestAnimationFrame(demoClock); }
 // before each step, make sure what the earlier steps should have done is in place (a missed click never derails the lesson)
 // line the iPad camera up with the QR code on the rear label (as a trainee would by moving the view)
 function demoAimQR(){ const vf = document.getElementById("vf"), guide = document.getElementById("vfguide"); if(!vf || !guide) return;
@@ -5567,8 +5567,18 @@ async function recPlay(rec, opts={}){
     const c = recCamAt(rec.cam, v); if(c){ sm.p.set(c[1],c[2],c[3]); sm.g.set(c[4],c[5],c[6]); }
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); window.__seekSnap = false;
     speakUntil = 0; lastNow = performance.now(); DEMO.t0 = performance.now() - v; ov.remove(); seeking = false; if(failed) demoFailShow(failed); };
-  if(sk){ sk.oninput = ()=>{ dragging = true; document.getElementById("demoClock").textContent = fmt(+sk.value * wRatio); };
-          sk.onchange = ()=>{ dragging = false; DEMO.seek(+sk.value); }; }
+  if(sk){ /* a time bubble follows the pointer and the slider knob, so the time is visible before letting go */
+    let tip = document.getElementById("demoSeekTip"); if(!tip){ tip = document.createElement("span"); tip.id = "demoSeekTip"; tip.hidden = true; skw.style.position = "relative"; skw.appendChild(tip); }
+    const showTip = (val, x)=>{ const wr = skw.getBoundingClientRect(); tip.textContent = fmt(val * wRatio); tip.hidden = false;
+      tip.style.left = Math.max(0, Math.min(wr.width, x - wr.left)) + "px"; };
+    const knobX = ()=>{ const r = sk.getBoundingClientRect(), th = 16, f = (+sk.value)/(+sk.max || 1); return r.left + th/2 + f*(r.width - th); };
+    const valAt = x=>{ const r = sk.getBoundingClientRect(), th = 16; return Math.max(0, Math.min(+sk.max, ((x - r.left - th/2)/(r.width - th)) * +sk.max)); };
+    sk.oninput = ()=>{ dragging = true; DEMO.dragging = true; showTip(+sk.value, knobX()); document.getElementById("demoClock").textContent = fmt(+sk.value * wRatio); };
+    sk.onpointerdown = ()=>{ dragging = true; DEMO.dragging = true; };
+    sk.onpointermove = e=>{ if(dragging) showTip(+sk.value, knobX()); else showTip(valAt(e.clientX), e.clientX); };
+    sk.onpointerleave = ()=>{ if(!dragging) tip.hidden = true; };
+    sk.onchange = ()=>{ dragging = false; DEMO.dragging = false; tip.hidden = true; DEMO.seek(+sk.value); };
+    sk.onpointerup = sk.onpointercancel = ()=>{ setTimeout(()=>{ if(dragging && !seeking){ dragging = false; DEMO.dragging = false; tip.hidden = true; } }, 400); }; }
   await new Promise(resolve=>{
     const step = ()=>{
       if(DEMO.stop){ resolve(); return; }
