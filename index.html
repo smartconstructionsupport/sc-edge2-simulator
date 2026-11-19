@@ -129,7 +129,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 .modecard{width:min(640px,100%);background:var(--surface);color:var(--ink);border-radius:14px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 .modecard h2{margin:0 0 4px;font-size:28px;display:block}
 .modecard > p{margin:0 0 16px;color:var(--muted)}
-.modeopts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.modeopts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.modeopt[hidden]{display:none !important}
 .modecard{width:min(860px,100%)!important}
 .builderbox{margin:10px 0 0;padding:12px 14px;border:2px dashed color-mix(in srgb,var(--signal) 70%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--signal) 8%,transparent)}
 .builderbox h3{margin:0 0 6px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:18px}
@@ -1214,11 +1214,11 @@ try { document.documentElement.dataset.theme = localStorage.getItem("edge2-theme
         <ul><li>Press Play on any scenario</li><li>The mouse and simulator move on their own</li><li>Hands off while it plays: press Stop to take over</li></ul></button>
       <button type="button" class="modeopt" id="pickGuided"><b>Guided mode</b><span>Learn step by step: just follow the guide.</span>
         <ul><li>Kit checklist before going to site</li><li>Step-by-step instructions in the task list</li><li>Highlights on what to tap next</li></ul></button>
-      <button type="button" class="modeopt" id="pickChal"><b>Challenge mode</b><span>Do a scenario on your own, against the clock.</span>
+      <button type="button" class="modeopt" id="pickChal" hidden><b>Challenge mode</b><span>Do a scenario on your own, against the clock.</span>
         <ul><li>Office, field and processing scenarios</li><li>Task titles only, no highlights</li><li>A hidden problem to spot and fix; hints cost points</li></ul></button>
       <button type="button" class="modeopt" id="pickFree"><b>Explore mode</b><span>Use the unit freely in any order, with no task guide.</span>
         <ul><li>No task list or step hints</li><li>No highlights</li><li>Field kit, iPad and scenario controls all available</li></ul></button>
-      <button type="button" class="modeopt" id="pickBuilder"><b>Instructor mode</b><span>For instructors preparing demonstrations and checking scenarios.</span>
+      <button type="button" class="modeopt" id="pickBuilder" hidden><b>Instructor mode</b><span>For instructors preparing demonstrations and checking scenarios.</span>
         <ul><li>Training task list and highlights</li><li>Jump straight to any step, with everything before it done</li><li>Reopens at the same step after a reload</li></ul></button>
 
     </div>
