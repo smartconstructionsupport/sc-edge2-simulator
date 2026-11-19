@@ -157,6 +157,11 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 .modepick .modeopt:hover .mgo i,.modepick .modeopt:focus-visible .mgo i{transform:translateX(4px)}
 .modepick .modeopt ul{margin-bottom:.9em}
 @media (prefers-reduced-motion:reduce){.modepick .modeopt:not([hidden]){animation:none}}
+/* when the screen is too short or narrow (phones), the front page scrolls as a whole, so every mode can be reached */
+.modepick{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.modepick .modecard{max-height:none!important;overflow:visible!important;margin:auto}
+.modepick .modehead{border-radius:18px 18px 0 0}
+@media (max-width:560px),(max-height:620px){.modepick{display:block;padding:12px}.modepick .modecard{margin:0 auto 24px;min-height:0}}
 /* the front page grows with the screen: almost full size on any monitor, never edge to edge */
 @media (min-width:561px){
 .modepick{--fu:min(1vw,1.8vh)}
