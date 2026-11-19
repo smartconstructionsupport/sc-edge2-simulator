@@ -221,6 +221,12 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 .moderow{display:flex;align-items:center;gap:10px;margin:0 0 6px;font-size:14px;color:var(--muted)}
 .moderow b{color:var(--ink)}
 .moderow button{font-size:13px;padding:5px 10px}
+/* Change mode stands out: a Gloria Blue pill with a soft Lt blue glow */
+#modeBtn,#demoExit{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:14px;padding:7px 16px;border-radius:999px;border:0;color:#fff;background:linear-gradient(90deg,#140A9A,#00A7E1);box-shadow:0 4px 14px rgba(20,10,154,.28),0 0 0 3px rgba(0,167,225,.18);cursor:pointer;animation:modeBtnGlow 2.6s ease-in-out infinite;transition:transform .15s}
+#modeBtn i,#demoExit i{font-style:normal;font-size:16px;line-height:1}
+#modeBtn:hover,#demoExit:hover,#modeBtn:focus-visible,#demoExit:focus-visible{transform:translateY(-1px) scale(1.04);animation:none;box-shadow:0 8px 20px rgba(20,10,154,.35),0 0 0 4px rgba(0,167,225,.35);outline:none}
+@keyframes modeBtnGlow{0%,100%{box-shadow:0 4px 14px rgba(20,10,154,.28),0 0 0 3px rgba(0,167,225,.18)}50%{box-shadow:0 6px 18px rgba(20,10,154,.34),0 0 0 6px rgba(0,167,225,.28)}}
+@media (prefers-reduced-motion:reduce){#modeBtn,#demoExit{animation:none}}
 .freenote{margin:10px 0 0;padding:12px 14px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent);border-radius:0 8px 8px 0;font-size:14px}
 .freenote p{margin:0 0 6px}.freenote p:last-child{margin:0}
 .intro{position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(470px,calc(100% - 24px));max-height:calc(100% - 24px);overflow-y:auto;background:var(--surface);color:var(--ink);border-radius:12px;padding:18px 18px 14px;box-shadow:0 14px 44px rgba(0,0,0,.28);z-index:6}
@@ -1190,7 +1196,7 @@ document.documentElement.dataset.theme = "light";   /* one colour way (GBS) */</
   <button type="button" class="panelGrip" id="panelGrip" role="separator" aria-orientation="vertical" aria-label="Resize the instruction panel (drag, or use the arrow keys; double-click to reset)" title="Drag to resize the panel · double-click to reset"></button>
   <aside class="panel">
     <h1>Hands-on practice</h1>
-    <p class="moderow">Mode: <b id="modeName">Training</b><button type="button" id="modeBtn">Change mode</button></p>
+    <p class="moderow">Mode: <b id="modeName">Training</b><button type="button" id="modeBtn"><i aria-hidden="true">⇄</i> Change mode</button></p>
     <p class="sub">A virtual SC Edge 2, set up to follow the user manual. Pick a scenario and follow the tasks on the left: each one tells you exactly what to do, and highlights show what to tap next.</p>
 
     <div class="freenote" id="freeNote" hidden>
@@ -5803,7 +5809,7 @@ function showDemoPanel(){ DEMO.mode = true; modePick.hidden = true;
   const all = (typeof SCN!=="undefined" ? SCN : []);
   const rows = all.map(sc=>{ const lib = DEMO_LIB.find(x=>x.id===sc.id); const sec = DEMO_REC[sc.id] ? Math.round(DEMO_REC[sc.id].duration/1000) : lib ? demoLen(lib.steps()) : 0;
     return `<li class="${lib?"":"soon"}"><span><b>${esc(sc.name)}</b><small>${esc(sc.grp)}${DEMO_REC[sc.id] ? " · 🎬 recorded demo" : DEMO_AUDIO[sc.id] ? " · 🎙 recorded narration" : ""}</small></span>${lib ? `<button type="button" class="primary" data-demo="${sc.id}">▶ Play <small>${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}</small></button>` : `<em>Demo coming soon</em>`}</li>`; }).join("");
-  demoPanel.innerHTML = `<div class="dph"><h2>Tutorial mode</h2><button type="button" id="demoExit">Change mode</button></div>
+  demoPanel.innerHTML = `<div class="dph"><h2>Tutorial mode</h2><button type="button" id="demoExit"><i aria-hidden="true">⇄</i> Change mode</button></div>
     ${hasTTS ? `<div class="dprec">💡 ${demoRecommend().text}${demoRecommend().voice && demoPickVoice() && demoRecommend().voice.name!==demoPickVoice().name ? ` <button type="button" id="dpUseRec">Use it</button>` : ""}</div><div class="dpv"><label><input type="checkbox" id="dpVoiceOn" ${DEMO_VOICE.on?"checked":""}> 🔊 Read the narration aloud</label>
       <select id="dpVoice" aria-label="Voice">${demoVoices().map(v=>`<option value="${esc(v.name)}" ${demoPickVoice()&&demoPickVoice().name===v.name?"selected":""}>${esc(v.name)} (${esc(v.lang)})</option>`).join("") || "<option>Default voice</option>"}</select>
       <button type="button" id="dpVoiceTest">Test voice</button></div>` : `<p class="small">This browser has no built-in voice, so demos play with captions only.</p>`}
