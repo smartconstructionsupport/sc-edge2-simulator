@@ -227,7 +227,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 /* Change mode stands out: a Gloria Blue pill with a soft Lt blue glow */
 #modeBtn,#demoExit{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:14px;padding:7px 16px;border-radius:999px;border:0;color:#fff;background:linear-gradient(90deg,#140A9A,#00A7E1);box-shadow:0 4px 14px rgba(20,10,154,.28),0 0 0 3px rgba(0,167,225,.18);cursor:pointer;animation:modeBtnGlow 2.6s ease-in-out infinite;transition:transform .15s}
 #modeBtn i,#demoExit i{font-style:normal;font-size:16px;line-height:1}
-#modeBtn:hover,#demoExit:hover,#modeBtn:focus-visible,#demoExit:focus-visible{transform:translateY(-1px) scale(1.04);animation:none;box-shadow:0 8px 20px rgba(20,10,154,.35),0 0 0 4px rgba(0,167,225,.35);outline:none}
+#modeBtn:hover,#modeBtn.hov,#demoExit:hover,#modeBtn:focus-visible,#demoExit:focus-visible{transform:translateY(-1px) scale(1.04);animation:none;box-shadow:0 8px 20px rgba(20,10,154,.35),0 0 0 4px rgba(0,167,225,.35);outline:none}
 @keyframes modeBtnGlow{0%,100%{box-shadow:0 4px 14px rgba(20,10,154,.28),0 0 0 3px rgba(0,167,225,.18)}50%{box-shadow:0 6px 18px rgba(20,10,154,.34),0 0 0 6px rgba(0,167,225,.28)}}
 @media (prefers-reduced-motion:reduce){#modeBtn,#demoExit{animation:none}}
 .freenote{margin:10px 0 0;padding:12px 14px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent);border-radius:0 8px 8px 0;font-size:14px}
@@ -4830,10 +4830,12 @@ async function dmY(sel, text, enter){ let el = document.querySelector(sel); for(
   if(enter){ await dmW(300); el.dispatchEvent(new KeyboardEvent("keydown", {key:"Enter", bubbles:true})); } }
 async function dmK(i){ const el = document.querySelector(`#kitList input[data-ki="${i}"]`); if(!el) return; el.scrollIntoView({block:"center"}); await dmW(120); const p = elPt(el); await demoMove(p.x, p.y, 500); demoRipple(); await dmW(150); el.click(); }
 /* while a tutorial lesson plays, the panel heading names Tutorial mode, not the guided mode it runs on */
+const MODE_LBL = `<i aria-hidden="true">⇄</i> Change mode`, STOP_LBL = `<i aria-hidden="true">■</i> Stop demo`;
 function demoModeLabel(){ const n = document.getElementById("modeName"), h = document.querySelector("#panelHead h1"); if(!n || !h) return;
   if(DEMO.on){ if(!n.dataset.prev){ n.dataset.prev = n.textContent; h.dataset.prev = h.textContent; } n.textContent = "Tutorial"; h.textContent = "Tutorial lesson"; }
-  else if(n.dataset.prev){ if(n.textContent === "Tutorial") n.textContent = n.dataset.prev; h.textContent = h.dataset.prev; delete n.dataset.prev; delete h.dataset.prev; } }
-setInterval(()=>{ if(typeof DEMO!=="undefined" && (DEMO.on ? document.getElementById("modeName").textContent !== "Tutorial" : document.getElementById("modeName").dataset.prev)) demoModeLabel(); }, 300);
+  else if(n.dataset.prev){ if(n.textContent === "Tutorial") n.textContent = n.dataset.prev; h.textContent = h.dataset.prev; delete n.dataset.prev; delete h.dataset.prev; }
+  const mb = document.getElementById("modeBtn"); if(mb){ const want = DEMO.on ? STOP_LBL : MODE_LBL; if(mb.innerHTML !== want) mb.innerHTML = want; mb.title = DEMO.on ? "Stop the lesson and go back to the tutorial list" : ""; } }
+setInterval(()=>{ if(typeof DEMO!=="undefined" && (DEMO.on ? document.getElementById("modeName").textContent !== "Tutorial" || !document.getElementById("modeBtn").textContent.includes("Stop") : document.getElementById("modeName").dataset.prev || document.getElementById("modeBtn").textContent.includes("Stop"))) demoModeLabel(); }, 300);
 function demoLayout(){ demoModeLabel(); if(!DEMO.on){ document.body.classList.remove("demo-on"); demoCap.classList.remove("placed"); return; }
   document.body.classList.add("demo-on"); document.documentElement.style.setProperty("--demoBarH", (demoBar.offsetHeight || 48) + "px");
   const r = stage.getBoundingClientRect(); demoCap.classList.add("placed");
@@ -5833,8 +5835,14 @@ const demoPanel = (()=>{ const d = document.createElement("div"); d.id = "demoPa
   ["pointerdown","pointerup","pointermove","mousemove","click","dblclick","wheel","contextmenu","touchstart","touchmove"].forEach(t=>sh.addEventListener(t, e=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false}));
   new MutationObserver(()=>{ sh.hidden = demoPanel.hidden; }).observe(demoPanel, {attributes:true, attributeFilter:["hidden"]}); }
 const demoBlock = (()=>{ const d = document.createElement("div"); d.id = "demoBlock"; d.hidden = true; d.title = ""; document.body.appendChild(d);
-  ["pointerdown","pointerup","pointermove","click","dblclick","wheel","contextmenu","touchstart","touchmove"].forEach(ev=>d.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false}));
+  ["pointerdown","pointerup","pointermove","click","dblclick","wheel","contextmenu","touchstart","touchmove"].forEach(ev=>d.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation();
+    /* the Stop demo button in the panel heading stays usable while a lesson plays */
+    const mb = document.getElementById("modeBtn"), r = mb && mb.offsetParent ? mb.getBoundingClientRect() : null, t = e.touches && e.touches[0], x = t ? t.clientX : e.clientX, y = t ? t.clientY : e.clientY;
+    const over = !!(r && e.isTrusted && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom);
+    if(ev==="pointermove"){ d.style.cursor = over ? "pointer" : ""; if(mb) mb.classList.toggle("hov", over); }
+    if(over && (ev==="click" || ev==="touchstart")) demoStopToList(); }, {passive:false}));
   return d; })();
+function demoStopToList(){ if(!DEMO.on) return; DEMO.mode = true; document.getElementById("modeBtn").classList.remove("hov"); document.getElementById("demoStop").click(); }
 window.addEventListener("keydown", e=>{ if(!DEMO.on || !e.isTrusted) return; if(e.key===" " || e.code==="Space"){ e.preventDefault(); e.stopPropagation(); demoTogglePause(); return; } if(e.key==="Escape"){ DEMO.stop = true; if(hasTTS) speechSynthesis.cancel(); demoAudioStop(); } e.preventDefault(); e.stopPropagation(); }, true);
 function demoLen(steps){ const l = steps[steps.length-1]; return l.t + l.len; }
 function showDemoPanel(){ DEMO.mode = true; modePick.hidden = true;
@@ -6219,7 +6227,7 @@ document.getElementById("pickBuilder").onclick = ()=>{ const first = !modeChosen
 document.getElementById("pickGuided").onclick = ()=>{ CHAL = false; chooseMode("guided"); };
 document.getElementById("pickChal").onclick = ()=>{ CHAL = true; chooseMode("guided"); };
 document.getElementById("pickFree").onclick = ()=>chooseMode("free");
-document.getElementById("modeBtn").onclick = ()=>{ modePick.hidden = false; document.getElementById(MODE==="guided"?"pickFree":"pickGuided").focus(); };
+document.getElementById("modeBtn").onclick = ()=>{ if(typeof DEMO!=="undefined" && DEMO.on){ demoStopToList(); return; } modePick.hidden = false; document.getElementById(MODE==="guided"?"pickFree":"pickGuided").focus(); };
 document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !modePick.hidden && modeChosen) modePick.hidden = true; });
 setTimeout(()=>document.getElementById("pickGuided").focus(), 100);
 /* the simulator always opens on the mode picker; Instructor mode (password) only when the instructor picks it */
