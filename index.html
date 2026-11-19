@@ -130,21 +130,32 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 .modecard h2{margin:0 0 4px;font-size:28px;display:block}
 .modecard > p{margin:0 0 16px;color:var(--muted)}
 .modeopts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.modeopt[hidden]{display:none !important}
-/* front page: GBS presentation standard (white, Gloria Blue #140A9A, Black gray #1B232A, Gray #A5ABAF, Light gray #D1D4D3, Arial) in both display modes */
-.modepick .modecard{width:min(1240px,96vw)!important;background:#fff;color:#1B232A;padding:0 0 28px;border-radius:6px;font-family:Arial,Helvetica,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-.modepick .modehead{background:#140A9A;padding:22px 32px;border-radius:6px 6px 0 0}
-.modepick .modehead h2{margin:0;color:#fff;font:700 30px/1.2 Arial,Helvetica,sans-serif;letter-spacing:0}
-.modepick .modesub{margin:22px 32px 4px;color:#140A9A;font:700 20px/1.3 Arial,Helvetica,sans-serif}
-.modepick .modecard > p{margin:0 32px 10px;color:#1B232A;font-size:14px}
-.modepick .relver2{margin:0 32px 18px;color:#6E757A;font-size:12px}
-.modepick .modeopts{margin:0 32px;gap:18px}
-.modepick .modeopt{background:#fff;border:2px solid #D1D4D3;border-radius:6px;padding:20px 22px;color:#1B232A;font-family:Arial,Helvetica,sans-serif}
-.modepick .modeopt:hover,.modepick .modeopt:focus-visible{border-color:#140A9A;box-shadow:0 0 0 3px rgba(20,10,154,.12);outline:none}
-.modepick .modeopt b{font:700 20px/1.25 Arial,Helvetica,sans-serif;color:#140A9A}
-.modepick .modeopt span,.modepick .modeopt ul{color:#1B232A;font-size:14px}
-.modepick .modeopt ul{color:#4a5258}
-.modepick .modeopt.sel,.modepick .modeopt[aria-pressed="true"]{border-color:#140A9A}
-@media (max-width:560px){.modepick .modehead{padding:16px 18px}.modepick .modehead h2{font-size:24px}.modepick .modesub{margin:16px 18px 4px}.modepick .modecard > p,.modepick .relver2{margin-left:18px;margin-right:18px}.modepick .modeopts{margin:0 18px}}
+/* front page: futuristic light design in the GBS colours (Gloria Blue #140A9A, Lt blue #00A7E1, Black gray #1B232A, Gray #A5ABAF, Light gray #D1D4D3, Natural yellow #FFC82F), the same in both display modes */
+.modepick{background:radial-gradient(1200px 600px at 20% 0%,rgba(0,167,225,.18),transparent 60%),radial-gradient(900px 600px at 100% 100%,rgba(20,10,154,.16),transparent 60%),rgba(238,241,246,.86);backdrop-filter:blur(6px)}
+.modepick::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(20,10,154,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(20,10,154,.06) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%)}
+.modepick .modecard{position:relative;width:min(1240px,96vw)!important;background:rgba(255,255,255,.92);color:#1B232A;padding:0 0 22px;border-radius:18px;border:1px solid rgba(20,10,154,.12);box-shadow:0 30px 80px rgba(20,10,154,.18),0 2px 0 rgba(255,255,255,.8) inset;overflow:hidden}
+.modepick .modecard::before{content:"";display:block;height:4px;background:linear-gradient(90deg,#140A9A,#00A7E1 60%,#FFC82F)}
+.modepick .modehead{position:relative;padding:26px 36px 22px;background:linear-gradient(120deg,#140A9A 0%,#1d23b8 55%,#00A7E1 130%);color:#fff;overflow:hidden}
+.modepick .modehead::after{content:"";position:absolute;right:-60px;top:-80px;width:340px;height:340px;border-radius:50%;border:1px solid rgba(255,255,255,.18);box-shadow:0 0 0 40px rgba(255,255,255,.04),0 0 0 90px rgba(255,255,255,.03);pointer-events:none}
+.modepick .modekick{display:inline-block;font:700 12px/1 "Barlow Condensed","Arial Narrow",Arial,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#FFC82F;margin-bottom:8px}
+.modepick .modehead h2{margin:0;color:#fff;font:700 38px/1.05 "Barlow Condensed","Arial Narrow",Arial,sans-serif;letter-spacing:.04em;text-transform:uppercase;text-shadow:0 2px 18px rgba(0,167,225,.35)}
+.modepick .modedesc{position:relative;max-width:900px;margin:12px 0 0;color:rgba(255,255,255,.88);font-size:15px;line-height:1.5}
+.modepick .modesub{margin:22px 36px 12px;color:#140A9A;font:700 22px/1.2 "Barlow Condensed","Arial Narrow",Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:12px}
+.modepick .modesub::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(20,10,154,.35),transparent)}
+.modepick .modeopts{margin:0 36px;gap:18px}
+.modepick .modeopt{position:relative;background:linear-gradient(180deg,#fff,#f6f8fc);border:1px solid #D1D4D3;border-radius:14px;padding:22px 22px 18px;color:#1B232A;transition:transform .15s,box-shadow .15s,border-color .15s;overflow:hidden}
+.modepick .modeopt::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,#140A9A,#00A7E1);opacity:.25;transition:opacity .15s}
+.modepick .modeopt:hover,.modepick .modeopt:focus-visible{border-color:#00A7E1;transform:translateY(-2px);box-shadow:0 12px 30px rgba(20,10,154,.16),0 0 0 3px rgba(0,167,225,.16);outline:none}
+.modepick .modeopt:hover::before,.modepick .modeopt:focus-visible::before{opacity:1}
+.modepick .modeopt .mnum{position:absolute;right:16px;top:12px;font:700 30px/1 "Barlow Condensed","Arial Narrow",Arial,sans-serif;font-style:normal;color:rgba(20,10,154,.12)}
+.modepick .modeopt b{font:700 23px/1.15 "Barlow Condensed","Arial Narrow",Arial,sans-serif;letter-spacing:.03em;text-transform:uppercase;color:#140A9A}
+.modepick .modeopt span{color:#1B232A;font-size:14px}
+.modepick .modeopt ul{color:#4b5560;font-size:14px}
+.modepick .modeopt li::marker{color:#00A7E1}
+.modepick .modefoot{margin:20px 36px 0;padding-top:14px;border-top:1px solid #D1D4D3;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 24px;color:#6E757A;font-size:12.5px}
+.modepick .modefoot p{margin:0}
+.modepick .relver2{margin:0;color:#6E757A;font-size:12.5px}
+@media (max-width:560px){.modepick .modehead{padding:20px 18px}.modepick .modehead h2{font-size:28px}.modepick .modedesc{font-size:14px}.modepick .modesub,.modepick .modeopts,.modepick .modefoot{margin-left:18px;margin-right:18px}}
 .modecard{width:min(860px,100%)!important}
 .builderbox{margin:10px 0 0;padding:12px 14px;border:2px dashed color-mix(in srgb,var(--signal) 70%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--signal) 8%,transparent)}
 .builderbox h3{margin:0 0 6px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:18px}
@@ -1221,25 +1232,28 @@ try { document.documentElement.dataset.theme = localStorage.getItem("edge2-theme
 
 <div class="modepick" id="modePick" role="dialog" aria-modal="true" aria-labelledby="modeH">
   <div class="modecard">
-    <div class="modehead"><h2 id="modeH">Smart Construction Edge 2 Simulator</h2></div>
-    <h3 class="modesub">Choose how you want to practice</h3>
-    <p>You can switch at any time with Change mode at the top of the panel.</p>
-    <p class="relver2" id="relVer2"></p>
+    <div class="modehead">
+      <span class="modekick">Training simulator</span>
+      <h2 id="modeH">SMART CONSTRUCTION EDGE 2 SIMULATOR</h2>
+      <p class="modedesc">Practise with the SMART CONSTRUCTION Edge 2 and its iPad app in 3D before going to site: prepare the unit and the iPad, run PPK and RTK drone surveys with or without GCPs, set the Edge 2 up as a base station, and process the point cloud. The steps are based on the SC Edge 2 user manual, and mistakes here cost nothing.</p>
+    </div>
+    <h3 class="modesub">Choose how you want to learn</h3>
     <div class="modeopts">
-      <button type="button" class="modeopt" id="pickDemo"><b>Tutorial mode</b><span>Watch a scenario play by itself, with narration captions.</span>
-        <ul><li>Press Play on any scenario</li><li>The mouse and simulator move on their own</li><li>Hands off while it plays: press Stop to take over</li></ul></button>
-      <button type="button" class="modeopt" id="pickGuided"><b>Guided mode</b><span>Learn step by step: just follow the guide.</span>
+      <button type="button" class="modeopt" id="pickDemo"><i class="mnum">01</i><b>Tutorial mode</b><span>Watch a scenario play by itself, with narration captions.</span>
+        <ul><li>Press Play on any scenario</li><li>The pointer and simulator move on their own</li><li>Hands off while it plays: press Stop to take over</li></ul></button>
+      <button type="button" class="modeopt" id="pickGuided"><i class="mnum">02</i><b>Guided mode</b><span>Learn step by step: just follow the guide.</span>
         <ul><li>Kit checklist before going to site</li><li>Step-by-step instructions in the task list</li><li>Highlights on what to tap next</li></ul></button>
       <button type="button" class="modeopt" id="pickChal" hidden><b>Challenge mode</b><span>Do a scenario on your own, against the clock.</span>
         <ul><li>Office, field and processing scenarios</li><li>Task titles only, no highlights</li><li>A hidden problem to spot and fix; hints cost points</li></ul></button>
-      <button type="button" class="modeopt" id="pickFree"><b>Explore mode</b><span>Use the unit freely in any order, with no task guide.</span>
+      <button type="button" class="modeopt" id="pickFree"><i class="mnum">03</i><b>Explore mode</b><span>Use the unit freely in any order, with no task guide.</span>
         <ul><li>No task list or step hints</li><li>No highlights</li><li>Field kit, iPad and scenario controls all available</li></ul></button>
       <button type="button" class="modeopt" id="pickBuilder" hidden><b>Instructor mode</b><span>For instructors preparing demonstrations and checking scenarios.</span>
         <ul><li>Training task list and highlights</li><li>Jump straight to any step, with everything before it done</li><li>Reopens at the same step after a reload</li></ul></button>
-
     </div>
+    <div class="modefoot"><p class="relver2" id="relVer2"></p><p>You can switch at any time with Change mode at the top of the panel.</p></div>
   </div>
 </div>
+
 <dialog class="confirm" id="confirmReset" aria-labelledby="crH" aria-describedby="crP">
   <h3 id="crH">Reset all tasks?</h3>
   <p id="crP">Your progress will be cleared and the unit will go back to the start: switched off, batteries in the field kit, tripod packed away. This can’t be undone.</p>
