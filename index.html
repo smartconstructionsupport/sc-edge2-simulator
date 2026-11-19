@@ -966,6 +966,7 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-co
 .panelhead{position:sticky;top:0;z-index:6;background:var(--surface);margin:0 -22px;padding:20px 22px 12px;border-bottom:1px solid transparent;transition:box-shadow .2s,border-color .2s}
 .panel.scrolled .panelhead{border-bottom-color:var(--line);box-shadow:0 8px 16px -10px rgba(20,10,154,.25)}
 .panelhead .scnbox{margin-bottom:0}
+body.demo-on .panelhead{position:static;box-shadow:none;border-bottom-color:transparent}   /* demos dock their lesson card over the panel top: the heading scrolls normally there */
 }
 @media (min-width:900px){ .panel{border-top:0} }
 h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:34px;line-height:1.05;margin:0 0 6px;letter-spacing:-.01em}
@@ -5484,6 +5485,7 @@ setInterval(()=>{ if(typeof tasks==="undefined" || !tasks || !tasks.length) retu
     const pt = Math.max(0, Math.round(cov)) + "px"; if(taskBox.style.paddingTop !== pt){ taskBox.style.paddingTop = cov > 0 ? pt : ""; taskLastK = null; } }
   if(!taskBox || performance.now() - taskUserAt < 8000) return;
   const br = taskBox.getBoundingClientRect(), lr = li.getBoundingClientRect(); let topLim = br.top + 8;
+  { const ph = document.getElementById("panelHead"); if(ph && getComputedStyle(ph).position==="sticky") topLim = Math.max(topLim, ph.getBoundingClientRect().bottom + 8); }   /* the pinned heading covers the top of the list */
   [lessonCard, document.getElementById("droneCard"), document.getElementById("miniDlg")].forEach(c=>{ if(c && !c.hidden && c.getClientRects().length && getComputedStyle(c).position==="fixed"){ const cr = c.getBoundingClientRect(); if(cr.right > br.left + 20 && cr.left < br.right - 20 && cr.top < br.top + br.height*0.6) topLim = Math.max(topLim, cr.bottom + 8); } });
   const k = li.dataset.k; if(k === taskLastK && lr.top >= topLim - 2 && lr.bottom <= br.bottom + 2) return; taskLastK = k;
   if(topLim > br.bottom - 60) return; taskBox.scrollTo({top: taskBox.scrollTop + (lr.top - topLim), behavior: "smooth"}); }, 400);
