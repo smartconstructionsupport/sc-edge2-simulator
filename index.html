@@ -143,6 +143,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 .modepick .modeopt li::marker{color:#00A7E1}
 .modepick .modefoot{margin:20px 36px 0;padding-top:14px;border-top:1px solid #D1D4D3;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 24px;color:#6E757A;font-size:12.5px}
 .modepick .modefoot p{margin:0}
+.modepick .modefoot .modewarn{flex-basis:100%;color:#1B232A;padding:.45em .8em;border-radius:8px;background:rgba(255,200,47,.14);border:1px solid rgba(255,200,47,.6)}
+.modepick .modefoot .modewarn b{color:#1B232A}
 .modepick .relver2{margin:0;color:#6E757A;font-size:12.5px}
 
 /* the mode cards invite a click: a soft breathing glow, a lift on hover, and a Start button */
@@ -1315,7 +1317,7 @@ document.documentElement.dataset.theme = "light";   /* one colour way (GBS) */</
       <button type="button" class="modeopt" id="pickBuilder" hidden><b>Instructor mode</b><span>For instructors preparing demonstrations and checking scenarios.</span>
         <ul><li>Training task list and highlights</li><li>Jump straight to any step, with everything before it done</li><li>Reopens at the same step after a reload</li></ul></button>
     </div>
-    <div class="modefoot"><p class="relver2" id="relVer2"></p><p>You can switch at any time with Change mode at the top of the panel.</p></div>
+    <div class="modefoot"><p class="modewarn" role="note"><b>Training use only.</b> This 3D model is a simplified training aid and does not exactly reflect the actual product. Always refer to the SC Edge 2 user manual and the real unit.</p><p class="relver2" id="relVer2"></p><p>You can switch at any time with Change mode at the top of the panel.</p></div>
   </div>
 </div>
 
