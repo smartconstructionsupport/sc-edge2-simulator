@@ -165,8 +165,6 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 .modepick .modeopt:hover{animation:none;transform:translateY(-9px) scale(1.015);box-shadow:0 26px 52px rgba(20,10,154,.28),0 0 0 4px #00A7E1}
 .modepick .modeopt:not([hidden]):focus-visible:not(:hover){transform:translateY(-4px);outline:none}
 @media (prefers-reduced-motion:reduce){.modepick .modeopt:not([hidden]){animation:none}}
-.modepick .muse{margin:-.2em 0 .8em;padding:.45em .7em;border-radius:10px;background:rgba(0,167,225,.08);border:1px solid rgba(0,167,225,.35);color:#1B232A;font-size:clamp(12px,calc(var(--fu,1vw) * 1.0),22px);line-height:1.4;font-weight:400}
-.modepick .muse .musek{display:block;color:#140A9A;font-weight:700;font-size:.8em;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.15em}
 /* the Edge 2 (rendered from this simulator's 3D model) in the title band, inside the circle decoration */
 .modepick .modeimg{position:absolute;right:4.5%;top:50%;transform:translateY(-50%);height:84%;max-width:23%;object-fit:contain;z-index:1;pointer-events:none;filter:drop-shadow(0 18px 26px rgba(5,8,60,.45)) drop-shadow(0 0 30px rgba(0,167,225,.35));animation:modeFloat 6s ease-in-out infinite}
 @keyframes modeFloat{0%,100%{transform:translateY(-50%)}50%{transform:translateY(calc(-50% - 6px))}}
@@ -201,7 +199,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 .modepick .relver2{font-size:inherit}
 .modepick .modecard{padding-bottom:clamp(22px,calc(var(--fu) * 1.8),44px)}
 }
-@media (min-width:561px) and (max-height:780px){.modepick .modehead h2{font-size:30px}.modepick .modedesc{font-size:14px;margin-top:8px}.modepick .modehead{padding-top:18px;padding-bottom:16px}.modepick .modesub{font-size:19px;margin-top:14px;margin-bottom:8px}.modepick .modeopt b{font-size:20px}.modepick .modeopt span,.modepick .modeopt ul{font-size:13px;line-height:1.4}.modepick .modeopt{padding:16px 18px 14px}.modepick .muse{font-size:12px}.modepick .modefoot{margin-top:12px;padding-top:8px}}
+@media (min-width:561px) and (max-height:780px){.modepick .modehead h2{font-size:30px}.modepick .modedesc{font-size:14px;margin-top:8px}.modepick .modehead{padding-top:18px;padding-bottom:16px}.modepick .modesub{font-size:19px;margin-top:14px;margin-bottom:8px}.modepick .modeopt b{font-size:20px}.modepick .modeopt span,.modepick .modeopt ul{font-size:13px;line-height:1.4}.modepick .modeopt{padding:16px 18px 14px}.modepick .modefoot{margin-top:12px;padding-top:8px}}
 @media (max-width:560px){.modepick .modehead{padding:20px 18px}.modepick .modehead h2{font-size:28px}.modepick .modedesc{font-size:14px}.modepick .modesub,.modepick .modeopts,.modepick .modefoot{margin-left:18px;margin-right:18px}}
 .modecard{width:min(860px,100%)!important}
 .builderbox{margin:10px 0 0;padding:12px 14px;border:2px dashed color-mix(in srgb,var(--signal) 70%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--signal) 8%,transparent)}
@@ -1310,7 +1308,7 @@ document.documentElement.dataset.theme = "light";   /* one colour way (GBS) */</
       <button type="button" class="modeopt" id="pickDemo"><i class="mnum">01</i><b>Tutorial mode</b><span>Watch a scenario play by itself, with narration captions.</span>
         <ul><li>Press Play on any scenario</li><li>The pointer and simulator move on their own</li><li>Hands off while it plays: press Stop to take over</li></ul><em class="mgo">Start tutorial <i aria-hidden="true">→</i></em></button>
       <button type="button" class="modeopt" id="pickGuided"><i class="mnum">02</i><b>Guided hands&#8209;on mode</b><span>Learn step by step: just follow the guide.</span>
-        <ul><li>Kit checklist before going to the job site</li><li>Step-by-step instructions in the task list</li><li>Highlights on what to tap next</li></ul><p class="muse"><strong class="musek">Ideal for group training</strong>Many participants but only a few physical Edge 2 units? Everyone practices the full procedure hands-on at the same time, on their own computer or tablet.</p><em class="mgo">Start hands-on <i aria-hidden="true">→</i></em></button>
+        <ul><li>Kit checklist before going to the job site</li><li>Step-by-step instructions in the task list</li><li>Highlights on what to tap next</li></ul><em class="mgo">Start hands-on <i aria-hidden="true">→</i></em></button>
       <button type="button" class="modeopt" id="pickChal" hidden><b>Challenge mode</b><span>Do a scenario on your own, against the clock.</span>
         <ul><li>Office, field and processing scenarios</li><li>Task titles only, no highlights</li><li>A hidden problem to spot and fix; hints cost points</li></ul></button>
       <button type="button" class="modeopt" id="pickFree"><i class="mnum">03</i><b>Explore mode</b><span>Use the unit freely in any order, with no task guide.</span>
