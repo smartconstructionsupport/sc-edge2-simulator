@@ -130,6 +130,21 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 .modecard h2{margin:0 0 4px;font-size:28px;display:block}
 .modecard > p{margin:0 0 16px;color:var(--muted)}
 .modeopts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.modeopt[hidden]{display:none !important}
+/* front page: GBS presentation standard (white, Gloria Blue #140A9A, Black gray #1B232A, Gray #A5ABAF, Light gray #D1D4D3, Arial) in both display modes */
+.modepick .modecard{width:min(1240px,96vw)!important;background:#fff;color:#1B232A;padding:0 0 28px;border-radius:6px;font-family:Arial,Helvetica,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.modepick .modehead{background:#140A9A;padding:22px 32px;border-radius:6px 6px 0 0}
+.modepick .modehead h2{margin:0;color:#fff;font:700 30px/1.2 Arial,Helvetica,sans-serif;letter-spacing:0}
+.modepick .modesub{margin:22px 32px 4px;color:#140A9A;font:700 20px/1.3 Arial,Helvetica,sans-serif}
+.modepick .modecard > p{margin:0 32px 10px;color:#1B232A;font-size:14px}
+.modepick .relver2{margin:0 32px 18px;color:#6E757A;font-size:12px}
+.modepick .modeopts{margin:0 32px;gap:18px}
+.modepick .modeopt{background:#fff;border:2px solid #D1D4D3;border-radius:6px;padding:20px 22px;color:#1B232A;font-family:Arial,Helvetica,sans-serif}
+.modepick .modeopt:hover,.modepick .modeopt:focus-visible{border-color:#140A9A;box-shadow:0 0 0 3px rgba(20,10,154,.12);outline:none}
+.modepick .modeopt b{font:700 20px/1.25 Arial,Helvetica,sans-serif;color:#140A9A}
+.modepick .modeopt span,.modepick .modeopt ul{color:#1B232A;font-size:14px}
+.modepick .modeopt ul{color:#4a5258}
+.modepick .modeopt.sel,.modepick .modeopt[aria-pressed="true"]{border-color:#140A9A}
+@media (max-width:560px){.modepick .modehead{padding:16px 18px}.modepick .modehead h2{font-size:24px}.modepick .modesub{margin:16px 18px 4px}.modepick .modecard > p,.modepick .relver2{margin-left:18px;margin-right:18px}.modepick .modeopts{margin:0 18px}}
 .modecard{width:min(860px,100%)!important}
 .builderbox{margin:10px 0 0;padding:12px 14px;border:2px dashed color-mix(in srgb,var(--signal) 70%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--signal) 8%,transparent)}
 .builderbox h3{margin:0 0 6px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:18px}
@@ -1206,7 +1221,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("edge2-theme
 
 <div class="modepick" id="modePick" role="dialog" aria-modal="true" aria-labelledby="modeH">
   <div class="modecard">
-    <h2 id="modeH">Choose how you want to practice</h2>
+    <div class="modehead"><h2 id="modeH">Smart Construction Edge 2 Simulator</h2></div>
+    <h3 class="modesub">Choose how you want to practice</h3>
     <p>You can switch at any time with Change mode at the top of the panel.</p>
     <p class="relver2" id="relVer2"></p>
     <div class="modeopts">
