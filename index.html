@@ -157,6 +157,14 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 .modepick .modeopt:hover .mgo i,.modepick .modeopt:focus-visible .mgo i{transform:translateX(4px)}
 .modepick .modeopt ul{margin-bottom:.9em}
 @media (prefers-reduced-motion:reduce){.modepick .modeopt:not([hidden]){animation:none}}
+/* all three mode cards stand out as clickable at all times (the raised, outlined look); pointing at one lifts it a little further */
+@keyframes modeGlow2{0%,100%{box-shadow:0 16px 36px rgba(20,10,154,.18),0 0 0 3px #00A7E1}50%{box-shadow:0 20px 44px rgba(20,10,154,.26),0 0 0 3px #00A7E1,0 0 18px 4px rgba(0,167,225,.35)}}
+.modepick .modeopt:not([hidden]){border-color:#00A7E1;transform:translateY(-4px);box-shadow:0 16px 36px rgba(20,10,154,.18),0 0 0 3px #00A7E1;animation:modeGlow2 3s ease-in-out infinite}
+.modepick .modeopt:not([hidden])::before{opacity:1}
+.modepick .modeopt:not([hidden]) .mgo{background:linear-gradient(90deg,#140A9A,#00A7E1)}
+.modepick .modeopt:hover{animation:none;transform:translateY(-9px) scale(1.015);box-shadow:0 26px 52px rgba(20,10,154,.28),0 0 0 4px #00A7E1}
+.modepick .modeopt:not([hidden]):focus-visible:not(:hover){transform:translateY(-4px);outline:none}
+@media (prefers-reduced-motion:reduce){.modepick .modeopt:not([hidden]){animation:none}}
 /* when the screen is too short or narrow (phones), the front page scrolls as a whole, so every mode can be reached */
 .modepick{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 .modepick .modecard{max-height:none!important;overflow:visible!important;margin:auto}
