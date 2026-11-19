@@ -1212,7 +1212,7 @@ document.documentElement.dataset.theme = "light";   /* one colour way (GBS) */</
         <button type="button" id="demoPlay" class="primary" onclick="demoPlay('office')">▶ Play demo: Preparations</button></div>
       <div class="demobox recbox"><h3>● Record a demo</h3><p>Do the scenario yourself while you screen-record with your voice. Every camera move, click, tap and entry is saved with its time, so the demo can replay exactly what you did, with a smoothed camera.</p>
         <div class="row"><select id="recScn" aria-label="Scenario to record"></select><button type="button" id="recGo" class="primary">● Record</button></div>
-        <p class="small">🎙 Talk as you go: your narration is turned into text and saved with the recording (Chrome or Edge; allow the microphone when asked). After a 3-second countdown the scenario starts from the beginning in Guided mode. Press <b>■ Stop &amp; save</b> (bottom left) when you finish; the recording is saved as a .json file to send to Claude.</p>
+        <p class="small">🎙 Talk as you go: your narration is turned into text and saved with the recording (Chrome or Edge; allow the microphone when asked). After a 3-second countdown the scenario starts from the beginning in Guided hands-on mode. Press <b>■ Stop &amp; save</b> (bottom left) when you finish; the recording is saved as a .json file to send to Claude.</p>
         <div class="row"><button type="button" id="recReplay">▶ Replay last recording</button><label class="filebtn">▶ Play a recording file<input type="file" id="recFile" accept=".json,application/json" hidden></label></div></div>
     </section>
     <section class="kitintro" id="kitIntro" hidden><h3>Before you go to the job site: check the kit</h3><p class="small">Tick the items one by one. Read what each one is for; the matching item glows in the field kit.</p><ol id="kitList"></ol></section>
@@ -1292,8 +1292,8 @@ document.documentElement.dataset.theme = "light";   /* one colour way (GBS) */</
     <div class="modeopts">
       <button type="button" class="modeopt" id="pickDemo"><i class="mnum">01</i><b>Tutorial mode</b><span>Watch a scenario play by itself, with narration captions.</span>
         <ul><li>Press Play on any scenario</li><li>The pointer and simulator move on their own</li><li>Hands off while it plays: press Stop to take over</li></ul><em class="mgo">Start tutorial <i aria-hidden="true">→</i></em></button>
-      <button type="button" class="modeopt" id="pickGuided"><i class="mnum">02</i><b>Guided mode</b><span>Learn step by step: just follow the guide.</span>
-        <ul><li>Kit checklist before going to the job site</li><li>Step-by-step instructions in the task list</li><li>Highlights on what to tap next</li></ul><em class="mgo">Start guided <i aria-hidden="true">→</i></em></button>
+      <button type="button" class="modeopt" id="pickGuided"><i class="mnum">02</i><b>Guided hands&#8209;on mode</b><span>Learn step by step: just follow the guide.</span>
+        <ul><li>Kit checklist before going to the job site</li><li>Step-by-step instructions in the task list</li><li>Highlights on what to tap next</li></ul><em class="mgo">Start hands-on <i aria-hidden="true">→</i></em></button>
       <button type="button" class="modeopt" id="pickChal" hidden><b>Challenge mode</b><span>Do a scenario on your own, against the clock.</span>
         <ul><li>Office, field and processing scenarios</li><li>Task titles only, no highlights</li><li>A hidden problem to spot and fix; hints cost points</li></ul></button>
       <button type="button" class="modeopt" id="pickFree"><i class="mnum">03</i><b>Explore mode</b><span>Use the unit freely in any order, with no task guide.</span>
@@ -5002,7 +5002,7 @@ const DEMO_SCN = {
     {t:265, len:9, k:"pwroff", say:"Now shut the Edge 2 down. Hold the power button for about four seconds, until the light goes out.", act: async ()=>{ if(pad.classList.contains('open')){ await dmC('#padBtn'); await dmW(700); }await dmC('#vFront'); await dmW(1500); await dmH(bFace, 4600); dmApp('pwroff'); } },
     {t:274, len:7, k:"unmount", say:"Unscrew the Edge 2 from the tribrach, and lift it off the tripod.", act: async ()=>{ await dmC('#actMount'); await dmW(2500); dmApp('unmount'); } },
     {t:281, len:6, k:"box", say:"Pack it back into its case, and close the lid.", act: async ()=>{ await dmC('#actCase'); await dmW(4000); dmApp('box'); } },
-    {t:287, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
+    {t:287, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided hands-on mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
   ],
   d2: [
     {t:0, len:11, k:"", say:"In this video, the Edge 2 becomes a base station. It sends R T K corrections to the drone over Wi-Fi during the flight.", act: async ()=>{ await dmW(1200); await dmC('#tasks li[data-k]',{noclick:true}); await dmW(2000); } },
@@ -5033,7 +5033,7 @@ const DEMO_SCN = {
     {t:237, len:9, k:"pwroff", say:"Now shut the Edge 2 down. Hold the power button for about four seconds, until the light goes out.", act: async ()=>{ if(pad.classList.contains('open')){ await dmC('#padBtn'); await dmW(700); }await dmC('#vFront'); await dmW(1500); await dmH(bFace, 4600); dmApp('pwroff'); } },
     {t:246, len:7, k:"unmount", say:"Unscrew the Edge 2 from the tribrach, and lift it off the tripod.", act: async ()=>{ await dmC('#actMount'); await dmW(2500); dmApp('unmount'); } },
     {t:253, len:6, k:"box", say:"Pack it back into its case, and close the lid.", act: async ()=>{ await dmC('#actCase'); await dmW(4000); dmApp('box'); } },
-    {t:259, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
+    {t:259, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided hands-on mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
   ],
   d3: [
     {t:0, len:9, k:"", say:"This time, we'll add ground control points to a P P K survey, for even better accuracy.", act: async ()=>{ await dmW(1200); await dmC('#tasks li[data-k]',{noclick:true}); await dmW(2000); } },
@@ -5067,7 +5067,7 @@ const DEMO_SCN = {
     {t:276, len:9, k:"pwroff", say:"Now shut the Edge 2 down. Hold the power button for about four seconds, until the light goes out.", act: async ()=>{ if(pad.classList.contains('open')){ await dmC('#padBtn'); await dmW(700); }await dmC('#vFront'); await dmW(1500); await dmH(bFace, 4600); dmApp('pwroff'); } },
     {t:285, len:7, k:"unmount", say:"Unscrew the Edge 2 from the tribrach, and lift it off the tripod.", act: async ()=>{ await dmC('#actMount'); await dmW(2500); dmApp('unmount'); } },
     {t:292, len:6, k:"box", say:"Pack it back into its case, and close the lid.", act: async ()=>{ await dmC('#actCase'); await dmW(4000); dmApp('box'); } },
-    {t:298, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
+    {t:298, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided hands-on mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
   ],
   d4: [
     {t:0, len:7, k:"", say:"Here we combine an R T K drone flight with ground control points.", act: async ()=>{ await dmW(1200); await dmC('#tasks li[data-k]',{noclick:true}); await dmW(2000); } },
@@ -5099,7 +5099,7 @@ const DEMO_SCN = {
     {t:248, len:9, k:"pwroff", say:"Now shut the Edge 2 down. Hold the power button for about four seconds, until the light goes out.", act: async ()=>{ if(pad.classList.contains('open')){ await dmC('#padBtn'); await dmW(700); }await dmC('#vFront'); await dmW(1500); await dmH(bFace, 4600); dmApp('pwroff'); } },
     {t:257, len:7, k:"unmount", say:"Unscrew the Edge 2 from the tribrach, and lift it off the tripod.", act: async ()=>{ await dmC('#actMount'); await dmW(2500); dmApp('unmount'); } },
     {t:264, len:6, k:"box", say:"Pack it back into its case, and close the lid.", act: async ()=>{ await dmC('#actCase'); await dmW(4000); dmApp('box'); } },
-    {t:270, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
+    {t:270, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided hands-on mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
   ],
   p1: [
     {t:0, len:11, k:"", say:"Back in the office, let's turn the drone photos into a point cloud, using the P P K log from the Edge 2.", act: async ()=>{ await dmW(1200); await dmC('#tasks li[data-k]',{noclick:true}); await dmW(2000); } },
@@ -5112,7 +5112,7 @@ const DEMO_SCN = {
     {t:71, len:6, k:"pcppk", say:"Check the settings, like the point density, and tap Start.", act: async ()=>{ await dmW(800); await dmC('#pad [data-a="pcGo"]'); await dmW(700); } },
     {t:77, len:11, k:"pcppk", say:"The Edge 2 now builds the point cloud by itself. It takes a while, so it's a good moment for a coffee.", act: async ()=>{ dmApp('pcppk'); await dmW(3000); } },
     {t:88, len:10, k:"export", say:"Finally, export the result. Tap Export Generated Data, choose the point cloud and where to save it, and tap Export.", act: async ()=>{ if(!pad.classList.contains('open')){ await dmC('#padBtn'); await dmW(900); }if(AP.dlg){ AP.dlg = null; } if(AP.screen!=='home' && AP.proj){ AP.screen = 'home'; } renderPad(); await dmW(500); await dmC('#pad [data-a="toExport"]'); await dmW(700);await dmPadSeq(['expSel','expGo','expOk'], 3000); dmApp('export'); await dmW(1500); } },
-    {t:98, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
+    {t:98, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided hands-on mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
   ],
   p2: [
     {t:0, len:8, k:"", say:"Let's process an R T K flight into a point cloud on the Edge 2.", act: async ()=>{ await dmW(1200); await dmC('#tasks li[data-k]',{noclick:true}); await dmW(2000); } },
@@ -5125,7 +5125,7 @@ const DEMO_SCN = {
     {t:68, len:6, k:"pcrtk", say:"Check the settings, like the point density, and tap Start.", act: async ()=>{ await dmW(800); await dmC('#pad [data-a="pcGo"]'); await dmW(700); } },
     {t:74, len:11, k:"pcrtk", say:"The Edge 2 now builds the point cloud by itself. It takes a while, so it's a good moment for a coffee.", act: async ()=>{ dmApp('pcrtk'); await dmW(3000); } },
     {t:85, len:10, k:"export", say:"Finally, export the result. Tap Export Generated Data, choose the point cloud and where to save it, and tap Export.", act: async ()=>{ if(!pad.classList.contains('open')){ await dmC('#padBtn'); await dmW(900); }if(AP.dlg){ AP.dlg = null; } if(AP.screen!=='home' && AP.proj){ AP.screen = 'home'; } renderPad(); await dmW(500); await dmC('#pad [data-a="toExport"]'); await dmW(700);await dmPadSeq(['expSel','expGo','expOk'], 3000); dmApp('export'); await dmW(1500); } },
-    {t:95, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
+    {t:95, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided hands-on mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
   ],
   p3: [
     {t:0, len:8, k:"", say:"Now we'll process P P K data with ground control points, and check the accuracy.", act: async ()=>{ await dmW(1200); await dmC('#tasks li[data-k]',{noclick:true}); await dmW(2000); } },
@@ -5142,7 +5142,7 @@ const DEMO_SCN = {
     {t:112, len:11, k:"pcppkgcp", say:"The Edge 2 now builds the point cloud by itself. It takes a while, so it's a good moment for a coffee.", act: async ()=>{ dmApp('pcppkgcp'); await dmW(3000); } },
     {t:123, len:13, k:"vck", say:"Now check the accuracy. Open the point cloud, choose Vertical Accuracy Check, import the check point file, and start. Each point should be within a few centimeters.", act: async ()=>{ if(!pad.classList.contains('open')){ await dmC('#padBtn'); await dmW(900); }if(AP.dlg){ AP.dlg = null; } if(AP.screen!=='home' && AP.proj){ AP.screen = 'home'; } renderPad(); await dmW(500); await dmPadSeq(['pcOpen','pcAcc','vckChk','impPts','pfSel:Check','pfOk','vckStart'], 3000); dmApp('vck'); await dmW(1500); } },
     {t:136, len:10, k:"export", say:"Finally, export the result. Tap Export Generated Data, choose the point cloud and where to save it, and tap Export.", act: async ()=>{ if(!pad.classList.contains('open')){ await dmC('#padBtn'); await dmW(900); }if(AP.dlg){ AP.dlg = null; } if(AP.screen!=='home' && AP.proj){ AP.screen = 'home'; } renderPad(); await dmW(500); await dmC('#pad [data-a="toExport"]'); await dmW(700);await dmPadSeq(['expSel','expGo','expOk'], 3000); dmApp('export'); await dmW(1500); } },
-    {t:146, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
+    {t:146, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided hands-on mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
   ],
   p4: [
     {t:0, len:7, k:"", say:"Let's process R T K data with ground control points, and check the accuracy.", act: async ()=>{ await dmW(1200); await dmC('#tasks li[data-k]',{noclick:true}); await dmW(2000); } },
@@ -5159,7 +5159,7 @@ const DEMO_SCN = {
     {t:111, len:11, k:"pcrtkgcp", say:"The Edge 2 now builds the point cloud by itself. It takes a while, so it's a good moment for a coffee.", act: async ()=>{ dmApp('pcrtkgcp'); await dmW(3000); } },
     {t:122, len:13, k:"vck", say:"Now check the accuracy. Open the point cloud, choose Vertical Accuracy Check, import the check point file, and start. Each point should be within a few centimeters.", act: async ()=>{ if(!pad.classList.contains('open')){ await dmC('#padBtn'); await dmW(900); }if(AP.dlg){ AP.dlg = null; } if(AP.screen!=='home' && AP.proj){ AP.screen = 'home'; } renderPad(); await dmW(500); await dmPadSeq(['pcOpen','pcAcc','vckChk','impPts','pfSel:Check','pfOk','vckStart'], 3000); dmApp('vck'); await dmW(1500); } },
     {t:135, len:10, k:"export", say:"Finally, export the result. Tap Export Generated Data, choose the point cloud and where to save it, and tap Export.", act: async ()=>{ if(!pad.classList.contains('open')){ await dmC('#padBtn'); await dmW(900); }if(AP.dlg){ AP.dlg = null; } if(AP.screen!=='home' && AP.proj){ AP.screen = 'home'; } renderPad(); await dmW(500); await dmC('#pad [data-a="toExport"]'); await dmW(700);await dmPadSeq(['expSel','expGo','expOk'], 3000); dmApp('export'); await dmW(1500); } },
-    {t:145, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
+    {t:145, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided hands-on mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
   ],
   d5: [
     {t:0, len:11, k:"", say:"In this video, the Edge 2 is a base station that sends corrections over the internet, through its own N trip caster.", act: async ()=>{ await dmW(1200); await dmC('#tasks li[data-k]',{noclick:true}); await dmW(2000); } },
@@ -5190,7 +5190,7 @@ const DEMO_SCN = {
     {t:237, len:9, k:"pwroff", say:"Now shut the Edge 2 down. Hold the power button for about four seconds, until the light goes out.", act: async ()=>{ if(pad.classList.contains('open')){ await dmC('#padBtn'); await dmW(700); }await dmC('#vFront'); await dmW(1500); await dmH(bFace, 4600); dmApp('pwroff'); } },
     {t:246, len:7, k:"unmount", say:"Unscrew the Edge 2 from the tribrach, and lift it off the tripod.", act: async ()=>{ await dmC('#actMount'); await dmW(2500); dmApp('unmount'); } },
     {t:253, len:6, k:"box", say:"Pack it back into its case, and close the lid.", act: async ()=>{ await dmC('#actCase'); await dmW(4000); dmApp('box'); } },
-    {t:259, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
+    {t:259, len:8, k:"", say:"And that's it! You've completed this scenario. Try it yourself in Guided hands-on mode, and see you in the next video.", act: async ()=>{ await dmW(6000); } }
   ]
 };
 
@@ -6095,7 +6095,7 @@ function startHint(){ if(MODE==="guided") say("Office work: start here","Task 1:
   else say("Explore mode","Explore in any order. Pick tools from the field kit, open the iPad, or tap any part to learn about it.",6000); }
 function applyMode(){
   const g = MODE==="guided";
-  document.getElementById("modeName").textContent = g ? (CHAL ? "Challenge" : "Guided") : "Explore";
+  document.getElementById("modeName").textContent = g ? (CHAL ? "Challenge" : "Guided hands-on") : "Explore";
   document.body.classList.toggle("chal", g && CHAL); document.body.classList.toggle("train", g && !CHAL);
   document.getElementById("chalBar").hidden = !(g && CHAL);
   if(g) chalReset(); if(g && typeof doReset==="function" && modeChosen) doReset();
@@ -6115,7 +6115,7 @@ const modePick = document.getElementById("modePick");
 function chooseMode(m){ const first = !modeChosen; MODE = m; modeChosen = true; modePick.hidden = true; applyMode();
   if(BUILDER){ setBuilder(false); try { localStorage.removeItem(B_KEY+"-mode"); } catch(e){} }
   if(first){ if(introHidden) setTimeout(startHint, 300); else setTimeout(openIntro, 200); }
-  else say(m==="guided"?(CHAL?"Challenge mode":"Guided mode"):"Explore mode", m==="guided" ? "The task list and hints are back. Your progress so far is kept." : "Task list and hints are hidden. Everything you’ve done so far stays as it is.", 5000); }
+  else say(m==="guided"?(CHAL?"Challenge mode":"Guided hands-on mode"):"Explore mode", m==="guided" ? "The task list and hints are back. Your progress so far is kept." : "Task list and hints are hidden. Everything you’ve done so far stays as it is.", 5000); }
 /* ---------- builder mode: jump to any task with every earlier task already done ---------- */
 let BUILDER = false, bStep = null;
 const B_KEY = "edge2-builder";
