@@ -4829,7 +4829,12 @@ async function dmY(sel, text, enter){ let el = document.querySelector(sel); for(
   for(const ch of text){ el.value += ch; el.dispatchEvent(new Event("input", {bubbles:true})); await dmW(70); }
   if(enter){ await dmW(300); el.dispatchEvent(new KeyboardEvent("keydown", {key:"Enter", bubbles:true})); } }
 async function dmK(i){ const el = document.querySelector(`#kitList input[data-ki="${i}"]`); if(!el) return; el.scrollIntoView({block:"center"}); await dmW(120); const p = elPt(el); await demoMove(p.x, p.y, 500); demoRipple(); await dmW(150); el.click(); }
-function demoLayout(){ if(!DEMO.on){ document.body.classList.remove("demo-on"); demoCap.classList.remove("placed"); return; }
+/* while a tutorial lesson plays, the panel heading names Tutorial mode, not the guided mode it runs on */
+function demoModeLabel(){ const n = document.getElementById("modeName"), h = document.querySelector("#panelHead h1"); if(!n || !h) return;
+  if(DEMO.on){ if(!n.dataset.prev){ n.dataset.prev = n.textContent; h.dataset.prev = h.textContent; } n.textContent = "Tutorial"; h.textContent = "Tutorial lesson"; }
+  else if(n.dataset.prev){ if(n.textContent === "Tutorial") n.textContent = n.dataset.prev; h.textContent = h.dataset.prev; delete n.dataset.prev; delete h.dataset.prev; } }
+setInterval(()=>{ if(typeof DEMO!=="undefined" && (DEMO.on ? document.getElementById("modeName").textContent !== "Tutorial" : document.getElementById("modeName").dataset.prev)) demoModeLabel(); }, 300);
+function demoLayout(){ demoModeLabel(); if(!DEMO.on){ document.body.classList.remove("demo-on"); demoCap.classList.remove("placed"); return; }
   document.body.classList.add("demo-on"); document.documentElement.style.setProperty("--demoBarH", (demoBar.offsetHeight || 48) + "px");
   const r = stage.getBoundingClientRect(); demoCap.classList.add("placed");
   const tbx = document.querySelector(".toolbar"), col = innerWidth >= 900 && tbx ? r.right - tbx.getBoundingClientRect().left + 10 : 0;   /* keep clear of the right-hand column */
