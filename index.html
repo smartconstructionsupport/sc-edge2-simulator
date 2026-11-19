@@ -9,25 +9,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#E3E5E1; --surface:#F5F6F3; --ink:#1C2430; --muted:#5A6470; --line:#CDD1CC;
-  --accent:#1F4E8C; --accent-ink:#FFFFFF; --signal:#F2B705; --done:#2F8F4E; --bad:#C2372B;
-  --panel:#F4F4F1; --card:#FFFFFF; --af1:#EEF0F2; --af2:#DDE1E5; --stage:#B9C2CA; --pad:#1B1F24; --screen:#FFFFFF; --screen-ink:#1C2430; --screen-muted:#6B7480; --screen-line:#E3E6EA;
+  /* one colour way: GBS standard (Gloria Blue #140A9A, Lt blue #00A7E1, Black gray #1B232A, Gray #A5ABAF, Light gray #D1D4D3, Natural yellow #FFC82F, Montabert green #2BB673) */
+  --bg:#EEF1F6; --surface:#FFFFFF; --ink:#1B232A; --muted:#5E676E; --line:#D1D4D3;
+  --accent:#140A9A; --accent-ink:#FFFFFF; --accent2:#00A7E1; --signal:#FFC82F; --done:#2BB673; --bad:#E0001B;
+  --panel:#F6F8FC; --card:#FFFFFF; --af1:#EEF1F6; --af2:#DCE3EE; --stage:#C9D3E3; --pad:#1B1F24; --screen:#FFFFFF; --screen-ink:#1B232A; --screen-muted:#6E757A; --screen-line:#E3E6EA;
   color-scheme: light;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#171C22; --surface:#20262E; --ink:#E7EAED; --muted:#9AA4AF; --line:#333B45;
-    --accent:#7AA8E6; --accent-ink:#0E1620; --signal:#F2B705; --done:#5CC27F; --bad:#FF7A6E;
-    --panel:#20262E; --card:#262D36; --af1:#1B2128; --af2:#14191F; --stage:#1E242B; --pad:#0B0D10; --screen:#1F242B; --screen-ink:#E7EAED; --screen-muted:#9AA4AF; --screen-line:#323943; color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#171C22; --surface:#20262E; --ink:#E7EAED; --muted:#9AA4AF; --line:#333B45;
-  --accent:#7AA8E6; --accent-ink:#0E1620; --signal:#F2B705; --done:#5CC27F; --bad:#FF7A6E;
-  --panel:#20262E; --card:#262D36; --af1:#1B2128; --af2:#14191F; --stage:#1E242B; --pad:#0B0D10; --screen:#1F242B; --screen-ink:#E7EAED; --screen-muted:#9AA4AF; --screen-line:#323943; color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -42,7 +31,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 }
 .disclaimer{flex:none;margin:0;padding:7px 16px;font-size:13px;line-height:1.35;text-align:center;color:var(--muted);background:var(--surface);border-bottom:1px solid var(--line)}
 .disclaimer b{color:var(--ink);font-weight:600}
-.stage{position:relative;background:var(--stage);overflow:hidden;min-height:340px}
+.stage{position:relative;background:radial-gradient(1100px 700px at 50% 35%,#E4EAF4 0%,#CBD5E6 60%,#B9C5DA 100%);overflow:hidden;min-height:340px}
 .stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
 .stage canvas:active{cursor:grabbing}
 .stage.tool canvas{cursor:crosshair}
@@ -368,7 +357,7 @@ body.demo-on .taptag{display:none!important}
 #demoSeeking{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;align-content:center;gap:14px;background:#1b2430;color:#fff;font:600 18px/1.3 inherit}#demoSeeking .bar{width:min(420px,70vw);height:6px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}#demoSeeking .bar i{display:block;height:100%;width:0;background:#f2b134;transition:width .1s linear}
 #demoBar.paused #demoClock{animation:demoBlink 1s steps(2) infinite}@keyframes demoBlink{50%{opacity:.3}}#demoPause.on{background:#F2B705;color:#1d2330;font-weight:700}
 body.demo-on{box-sizing:border-box;padding-bottom:var(--demoBarH,48px)}
-body.demo-on #demoBar{left:0!important;right:0;bottom:0!important;border-radius:0;padding:8px 14px;gap:10px;background:#11151d;flex-wrap:nowrap;box-shadow:0 -4px 16px rgba(0,0,0,.25)}
+body.demo-on #demoBar{left:0!important;right:0;bottom:0!important;border-radius:0;padding:8px 14px;gap:10px;background:linear-gradient(90deg,#140A9A,#1d23b8 60%,#0a6fb5);flex-wrap:nowrap;box-shadow:0 -4px 16px rgba(20,10,154,.25)}
 body.demo-on #demoSeekWrap{flex:1;min-width:120px}body.demo-on #demoSeek{flex:1;width:auto}
 #demoCap:empty{display:none}#afShade{position:absolute;inset:0;background:linear-gradient(var(--af1,#eef0f2),var(--af2,#dde1e5));opacity:0;transition:opacity .4s;pointer-events:none}#afShade.on{opacity:1}.quiznote{font-size:12px;color:var(--muted);margin:-4px 0 8px}#demoSeekWrap[title]{cursor:help}
 #demoCap.placed{left:var(--capX,50%);bottom:var(--capB,60px);max-width:var(--capW,80vw)}
@@ -1005,7 +994,7 @@ html,body{max-width:100%;overflow-x:hidden}
   .toolbar button,.kit .chip,.kit.actions button{font-size:12px;padding:5px 8px;min-height:32px}
   .kit.actions{bottom:56px}
 }
-.disclaimer{position:relative;padding-left:140px;padding-right:140px}
+.disclaimer{position:relative}
 .themebtn{position:absolute;right:12px;top:50%;transform:translateY(-50%);padding:3px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 @media (max-width:700px){.disclaimer{padding-left:12px;padding-right:12px;padding-bottom:34px}.themebtn{top:auto;bottom:6px;transform:none}}
 .themebtn:hover{border-color:var(--accent)}
@@ -1021,10 +1010,10 @@ body.panel-dragging iframe,body.panel-dragging canvas{pointer-events:none}
 </style>
 <script>try { const w = +localStorage.getItem("edge2-panelw"); if(w >= 260 && w <= 900) document.documentElement.style.setProperty("--panelW", w + "px"); } catch(e){}
 /* display mode: dark by default, light/normal on request (remembered on this device) */
-try { document.documentElement.dataset.theme = localStorage.getItem("edge2-theme") === "light" ? "light" : "dark"; } catch(e){ document.documentElement.dataset.theme = "dark"; }</script>
+document.documentElement.dataset.theme = "light";   /* one colour way (GBS) */</script>
 </head>
 <body>
-<p class="disclaimer" role="note"><b>Training use only.</b> This 3D model is a simplified training aid and does not exactly reflect the actual product. Always refer to the SC Edge 2 user manual and the real unit. <span class="relver" id="relVer"></span><button type="button" class="themebtn" id="themeBtn"></button></p>
+<p class="disclaimer" role="note"><b>Training use only.</b> This 3D model is a simplified training aid and does not exactly reflect the actual product. Always refer to the SC Edge 2 user manual and the real unit. <span class="relver" id="relVer"></span></p>
 <div class="app">
   <section class="stage" id="stage" aria-label="3D model of the SC Edge 2">
     <div class="rain" id="rain"></div>
@@ -1347,8 +1336,7 @@ const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
     g.addEventListener("dblclick", ()=>{ root.style.removeProperty("--panelW"); try { localStorage.removeItem("edge2-panelw"); } catch(e){} notify(); });
     g.addEventListener("keydown", e=>{ const st = e.shiftKey ? 60 : 20; if(e.key==="ArrowLeft"){ e.preventDefault(); setW(cur() - st, true); } else if(e.key==="ArrowRight"){ e.preventDefault(); setW(cur() + st, true); } });
     addEventListener("resize", ()=>{ if(!drag && cur() > maxW()) root.style.setProperty("--panelW", maxW() + "px"); }); } }
-{ const tb = document.getElementById("themeBtn"); const lab = ()=>{ const d = document.documentElement.dataset.theme !== "light"; tb.textContent = d ? "☀ Light mode" : "☾ Dark mode"; tb.setAttribute("aria-label", d ? "Switch to light display mode" : "Switch to dark display mode"); };
-  if(tb){ lab(); tb.addEventListener("click", ()=>{ const t = document.documentElement.dataset.theme === "light" ? "dark" : "light"; document.documentElement.dataset.theme = t; try { localStorage.setItem("edge2-theme", t); } catch(e){} lab(); }); } }
+
 // while the demo jumps along the timeline, the simulator's own waits (loading spinners, scans) are shortened so the jump is quick
 { const _st = window.setTimeout.bind(window); window.__seekEpoch = 0;
   window.setTimeout = (fn, ms, ...a)=>{ if(typeof fn!=="function") return _st(fn, ms, ...a); const ep = window.__seekEpoch;
