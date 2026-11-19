@@ -293,7 +293,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-
 @keyframes bpulse{50%{box-shadow:0 0 0 6px rgba(22,163,74,0)}}@media (prefers-reduced-motion:reduce){.drone .dst td.bcast i{animation:none}}
 .drone .dst.cfg input{width:100%;font:inherit;font-weight:600;padding:2px 4px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink)}
 .drone ol.dsteps{margin:0 0 8px 18px;padding:0;font-size:12px;color:var(--muted)}.drone ol.dsteps li.on{color:var(--ink);font-weight:600}
-body.demo-on #scnBox, body.demo-on .panel > .sub{display:none}
+body.demo-on #scnBox, body.demo-on .panel .sub{display:none}
 .callout b{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:24px;line-height:1.1;display:block;margin-bottom:4px;color:color-mix(in srgb,var(--cc) 55%,var(--ink))}
 .callout p{margin:0;font-size:17px;line-height:1.4}
 .meter{height:6px;background:var(--line);border-radius:3px;margin-top:8px;overflow:hidden;display:none}
@@ -960,6 +960,13 @@ button:disabled{opacity:.45;cursor:not-allowed}
 button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .panel{background:var(--surface);padding:24px 22px 32px;border-top:1px solid var(--line)}
+/* the title, mode and scenario choice stay at the top of the panel while the task list scrolls under them */
+@media (min-width:900px){
+.panel{padding-top:0}
+.panelhead{position:sticky;top:0;z-index:6;background:var(--surface);margin:0 -22px;padding:20px 22px 12px;border-bottom:1px solid transparent;transition:box-shadow .2s,border-color .2s}
+.panel.scrolled .panelhead{border-bottom-color:var(--line);box-shadow:0 8px 16px -10px rgba(20,10,154,.25)}
+.panelhead .scnbox{margin-bottom:0}
+}
 @media (min-width:900px){ .panel{border-top:0} }
 h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:34px;line-height:1.05;margin:0 0 6px;letter-spacing:-.01em}
 .sub{margin:0 0 18px;color:var(--muted);max-width:60ch}
@@ -1195,10 +1202,13 @@ document.documentElement.dataset.theme = "light";   /* one colour way (GBS) */</
 
   <button type="button" class="panelGrip" id="panelGrip" role="separator" aria-orientation="vertical" aria-label="Resize the instruction panel (drag, or use the arrow keys; double-click to reset)" title="Drag to resize the panel · double-click to reset"></button>
   <aside class="panel">
+    <div class="panelhead" id="panelHead">
     <h1>Hands-on practice</h1>
     <p class="moderow">Mode: <b id="modeName">Training</b><button type="button" id="modeBtn"><i aria-hidden="true">⇄</i> Change mode</button></p>
     <p class="sub">A virtual SC Edge 2, set up to follow the user manual. Pick a scenario and follow the tasks on the left: each one tells you exactly what to do, and highlights show what to tap next.</p>
 
+    <div class="scnbox" id="scnBox"><label for="scnSel">Training scenario</label><select id="scnSel"></select><p class="small" id="scnNote"></p></div>
+    </div>
     <div class="freenote" id="freeNote" hidden>
       <p><b>Explore mode.</b> No task list and no step-by-step guidance: use the unit, the field kit and the iPad in any order you like.</p>
       <p>The unit still behaves as in the manual, so mistakes show up as warnings. Use Reset in Scenario controls to start over.</p>
@@ -1215,9 +1225,8 @@ document.documentElement.dataset.theme = "light";   /* one colour way (GBS) */</
         <p class="small">🎙 Talk as you go: your narration is turned into text and saved with the recording (Chrome or Edge; allow the microphone when asked). After a 3-second countdown the scenario starts from the beginning in Guided hands-on mode. Press <b>■ Stop &amp; save</b> (bottom left) when you finish; the recording is saved as a .json file to send to Claude.</p>
         <div class="row"><button type="button" id="recReplay">▶ Replay last recording</button><label class="filebtn">▶ Play a recording file<input type="file" id="recFile" accept=".json,application/json" hidden></label></div></div>
     </section>
-    <section class="kitintro" id="kitIntro" hidden><h3>Before you go to the job site: check the kit</h3><p class="small">Tick the items one by one. Read what each one is for; the matching item glows in the field kit.</p><ol id="kitList"></ol></section>
+    <section class="kitintro" id="kitIntro" hidden><h3>Before you go to the job site: check the kit</h3><p class="small">Check off the items one by one. Read what each one is for; the matching item glows in the field kit.</p><ol id="kitList"></ol></section>
     <div class="chalbar" id="chalBar" hidden><span>⏱ <b id="chalTime">0:00</b></span><span>Hints used: <b id="chalHints">0</b></span><span>Score: <b id="chalScore">100</b></span><span class="chp">Hidden problem: <b id="chalProb">?</b></span></div>
-    <div class="scnbox" id="scnBox"><label for="scnSel">Training scenario</label><select id="scnSel"></select><p class="small" id="scnNote"></p></div>
     <h2 id="taskHead">Your tasks <span class="taskmeta"><small id="progress"></small><button type="button" id="resetTasks">Reset tasks</button></span></h2>
     <ol class="tasks" id="tasks">
       <li class="phase" aria-hidden="true">Office work</li>
@@ -1384,6 +1393,7 @@ const done = { install:false, lowon:false, charge:false, officeoff:false, box:fa
   base:false, ctrl:false, flyb:false, tape:false, app2:false, homeicon:false, simfirst:false, apnset:false, simin:false, ltechk:false, basen:false, ntripchk:false, pwroff:false, unmount:false, sdout:false, sdin:false, usbin:false, basestop:false, pcppk:false, pcrtk:false, pcppkgcp:false, pcrtkgcp:false, pcgcp:false, vck:false, ck3:false, gcpacc:false, export:false, pc:false, seal:false, swap:false, off:false };
 const blink = (t,p)=> (t % p) < p/2;
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+{ const pn = document.querySelector("aside.panel"); if(pn) pn.addEventListener("scroll", ()=>pn.classList.toggle("scrolled", pn.scrollTop > 4), {passive:true}); }
 { const g = document.getElementById("panelGrip"), root = document.documentElement;
   const minW = 260, maxW = ()=> Math.max(minW, Math.min(900, Math.round(innerWidth*0.55)));
   const cur = ()=> parseFloat(getComputedStyle(root).getPropertyValue("--panelW")) || 400;
@@ -4706,7 +4716,7 @@ function guideTick(){ const g = MODE==="guided", card = document.getElementById(
   card.hidden = true;   // guide card removed: the task list already shows each step's instructions
   { const ki = document.getElementById("kitIntro"), show = g && !CHAL && li && li.dataset.k==="kitcheck" && !done.kitcheck;
     if(show && ki.parentElement!==li){ KIT.n = 0; li.appendChild(ki); ki.hidden = false; buildKitIntro(); setTimeout(()=>ki.scrollIntoView({block:"nearest", behavior:"smooth"}), 50); }
-    if(!show && !ki.hidden){ ki.hidden = true; document.getElementById("scnBox").before(ki); } }
+    if(!show && !ki.hidden){ ki.hidden = true; document.getElementById("panelHead").after(ki); } }
   if(!card.hidden){ const k = li.dataset.k; if(card.dataset.k!==k){ card.dataset.k = k; card.classList.remove("min"); card.classList.add("pop"); setTimeout(()=>card.classList.remove("pop"), 600); }
     document.getElementById("gcStep").textContent = `Step ${idx+1} of ${tasks.length}`; document.getElementById("gcTitle").textContent = TXT[k][0]; document.getElementById("gcHint").textContent = TXT[k][1]; }
   if(g && CHAL){ const all = tasks.every(li=>done[li.dataset.k]); if(all && !CH.doneAt) CH.doneAt = performance.now();
@@ -5917,7 +5927,7 @@ function scnLock(){ const sel = document.getElementById("scnSel"); if(!sel) retu
   if(cur>=0 && scnLocked(cur)){ let i = cur; while(i>0 && scnLocked(i)) i--; SCN_ID = SCN[i].id; sel.value = SCN_ID; try { localStorage.setItem("edge2-scn", SCN_ID); } catch(e){} buildTasks(); doReset(); scnSetup(); }
   const note = document.getElementById("scnNote"); if(note) delete note.dataset.lock; }
 function buildTasks(){
-  { const ki = document.getElementById("kitIntro"); if(ki){ ki.hidden = true; document.getElementById("scnBox").before(ki); } }
+  { const ki = document.getElementById("kitIntro"); if(ki){ ki.hidden = true; document.getElementById("panelHead").after(ki); } }
   const sc = SCN.find(x=>x.id===SCN_ID) || SCN[0], ol = document.getElementById("tasks");
   const GRP = {simin:"Network",basen:"Survey",pwroff:"Finish",sdout:"Prepare the data",tape:"Measure",box:"Pack up", kitcheck:"Pack up", gcpset:"Before set-up", level:"Set up and connect", ppkstart:"Survey", base:"Survey", pcppk:"Process", pcrtk:"Process", pcppkgcp:"Process", pcrtkgcp:"Process", pcgcp:"Process", vck:"Check accuracy", export:"Deliver", install:"Office prep"};
   ol.innerHTML = `<li class="phase" aria-hidden="true">${esc(sc.grp)}</li>` + sc.keys.map(k=>(GRP[k]?`<li class="grp" aria-hidden="true">${GRP[k]}</li>`:"")+`<li data-k="${k}"><span>${esc(((sc.txt||{})[k]||TXT[k])[0])}</span><em>${esc(((sc.txt||{})[k]||TXT[k])[1])}</em></li>`).join("");
