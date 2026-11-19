@@ -966,7 +966,11 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-co
 .panelhead{position:sticky;top:0;z-index:6;background:var(--surface);margin:0 -22px;padding:20px 22px 12px;border-bottom:1px solid transparent;transition:box-shadow .2s,border-color .2s}
 .panel.scrolled .panelhead{border-bottom-color:var(--line);box-shadow:0 8px 16px -10px rgba(20,10,154,.25)}
 .panelhead .scnbox{margin-bottom:0}
-body.demo-on .panelhead{position:static;box-shadow:none;border-bottom-color:transparent}   /* demos dock their lesson card over the panel top: the heading scrolls normally there */
+body.demo-on .panelhead{position:static;box-shadow:none;border-bottom-color:transparent}
+.panelhead #taskHead{margin-bottom:0}
+/* the first phase bar (e.g. OFFICE WORK) stays pinned just under the heading */
+body:not(.demo-on) ol.tasks li.phase:first-child{position:sticky;top:var(--phh,0px);z-index:5;margin-top:0;box-shadow:0 -8px 0 var(--surface),0 10px 0 var(--surface),0 16px 12px -8px rgba(20,10,154,.25)}
+.panel.scrolled .panelhead{box-shadow:none}   /* demos dock their lesson card over the panel top: the heading scrolls normally there */
 }
 @media (min-width:900px){ .panel{border-top:0} }
 h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:34px;line-height:1.05;margin:0 0 6px;letter-spacing:-.01em}
@@ -1209,6 +1213,7 @@ document.documentElement.dataset.theme = "light";   /* one colour way (GBS) */</
     <p class="sub">A virtual SC Edge 2, set up to follow the user manual. Pick a scenario and follow the tasks on the left: each one tells you exactly what to do, and highlights show what to tap next.</p>
 
     <div class="scnbox" id="scnBox"><label for="scnSel">Training scenario</label><select id="scnSel"></select><p class="small" id="scnNote"></p></div>
+    <h2 id="taskHead">Your tasks <span class="taskmeta"><small id="progress"></small><button type="button" id="resetTasks">Reset tasks</button></span></h2>
     </div>
     <div class="freenote" id="freeNote" hidden>
       <p><b>Explore mode.</b> No task list and no step-by-step guidance: use the unit, the field kit and the iPad in any order you like.</p>
@@ -1228,7 +1233,6 @@ document.documentElement.dataset.theme = "light";   /* one colour way (GBS) */</
     </section>
     <section class="kitintro" id="kitIntro" hidden><h3>Before you go to the job site: check the kit</h3><p class="small">Check off the items one by one. Read what each one is for; the matching item glows in the field kit.</p><ol id="kitList"></ol></section>
     <div class="chalbar" id="chalBar" hidden><span>⏱ <b id="chalTime">0:00</b></span><span>Hints used: <b id="chalHints">0</b></span><span>Score: <b id="chalScore">100</b></span><span class="chp">Hidden problem: <b id="chalProb">?</b></span></div>
-    <h2 id="taskHead">Your tasks <span class="taskmeta"><small id="progress"></small><button type="button" id="resetTasks">Reset tasks</button></span></h2>
     <ol class="tasks" id="tasks">
       <li class="phase" aria-hidden="true">Office work</li>
       <li class="grp" aria-hidden="true">Office prep</li>
@@ -1394,7 +1398,8 @@ const done = { install:false, lowon:false, charge:false, officeoff:false, box:fa
   base:false, ctrl:false, flyb:false, tape:false, app2:false, homeicon:false, simfirst:false, apnset:false, simin:false, ltechk:false, basen:false, ntripchk:false, pwroff:false, unmount:false, sdout:false, sdin:false, usbin:false, basestop:false, pcppk:false, pcrtk:false, pcppkgcp:false, pcrtkgcp:false, pcgcp:false, vck:false, ck3:false, gcpacc:false, export:false, pc:false, seal:false, swap:false, off:false };
 const blink = (t,p)=> (t % p) < p/2;
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-{ const pn = document.querySelector("aside.panel"); if(pn) pn.addEventListener("scroll", ()=>pn.classList.toggle("scrolled", pn.scrollTop > 4), {passive:true}); }
+{ const pn = document.querySelector("aside.panel"), ph = document.getElementById("panelHead"); if(pn) pn.addEventListener("scroll", ()=>pn.classList.toggle("scrolled", pn.scrollTop > 4), {passive:true});
+  if(pn && ph && window.ResizeObserver) new ResizeObserver(()=>pn.style.setProperty("--phh", ph.offsetHeight + "px")).observe(ph); }
 { const g = document.getElementById("panelGrip"), root = document.documentElement;
   const minW = 260, maxW = ()=> Math.max(minW, Math.min(900, Math.round(innerWidth*0.55)));
   const cur = ()=> parseFloat(getComputedStyle(root).getPropertyValue("--panelW")) || 400;
@@ -5485,7 +5490,7 @@ setInterval(()=>{ if(typeof tasks==="undefined" || !tasks || !tasks.length) retu
     const pt = Math.max(0, Math.round(cov)) + "px"; if(taskBox.style.paddingTop !== pt){ taskBox.style.paddingTop = cov > 0 ? pt : ""; taskLastK = null; } }
   if(!taskBox || performance.now() - taskUserAt < 8000) return;
   const br = taskBox.getBoundingClientRect(), lr = li.getBoundingClientRect(); let topLim = br.top + 8;
-  { const ph = document.getElementById("panelHead"); if(ph && getComputedStyle(ph).position==="sticky") topLim = Math.max(topLim, ph.getBoundingClientRect().bottom + 8); }   /* the pinned heading covers the top of the list */
+  { const ph = document.getElementById("panelHead"); if(ph && getComputedStyle(ph).position==="sticky") topLim = Math.max(topLim, ph.getBoundingClientRect().bottom + 8); const pf = document.querySelector("ol.tasks li.phase:first-child"); if(pf && getComputedStyle(pf).position==="sticky") topLim = Math.max(topLim, pf.getBoundingClientRect().bottom + 8); }   /* the pinned heading covers the top of the list */
   [lessonCard, document.getElementById("droneCard"), document.getElementById("miniDlg")].forEach(c=>{ if(c && !c.hidden && c.getClientRects().length && getComputedStyle(c).position==="fixed"){ const cr = c.getBoundingClientRect(); if(cr.right > br.left + 20 && cr.left < br.right - 20 && cr.top < br.top + br.height*0.6) topLim = Math.max(topLim, cr.bottom + 8); } });
   const k = li.dataset.k; if(k === taskLastK && lr.top >= topLim - 2 && lr.bottom <= br.bottom + 2) return; taskLastK = k;
   if(topLim > br.bottom - 60) return; taskBox.scrollTo({top: taskBox.scrollTop + (lr.top - topLim), behavior: "smooth"}); }, 400);
