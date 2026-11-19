@@ -4842,8 +4842,8 @@ async function demoPlay(id){
 function demoTogglePause(force){
   if(!DEMO.on) return; const want = force===undefined ? !DEMO.paused : force; if(want === !!DEMO.paused) return;
   const now = performance.now(), b = document.getElementById("demoPause");
-  if(want){ DEMO.paused = true; DEMO.pauseAt = now; if(hasTTS && speechSynthesis.speaking) speechSynthesis.pause(); if(demoTrack.el) demoTrack.el.pause(); demoCur.classList.remove("hold"); }
-  else { const d = now - (DEMO.pauseAt || now); DEMO.paused = false; if(!DEMO.rec) DEMO.t0 += d; if(hasTTS) speechSynthesis.resume(); if(demoTrack.el && DEMO_VOICE.on) demoTrack.el.play().catch(()=>{}); }
+  if(want){ DEMO.paused = true; DEMO.pauseAt = now; DEMO.resay = null; if(hasTTS && (speechSynthesis.speaking || speechSynthesis.pending)){ if(DEMO.rec){ DEMO.resay = DEMO.lastSay || null; speechSynthesis.cancel(); } else speechSynthesis.pause(); }   /* a paused voice can stay stuck in some browsers after a long pause, so it is stopped and the line is said again on Play */ if(demoTrack.el) demoTrack.el.pause(); demoCur.classList.remove("hold"); }
+  else { const d = now - (DEMO.pauseAt || now); DEMO.paused = false; if(!DEMO.rec) DEMO.t0 += d; if(hasTTS){ if(DEMO.rec){ speechSynthesis.cancel(); DEMO.voiceStuck = false; if(DEMO.resay && DEMO_VOICE.on){ DEMO.sayAt = now; DEMO.sayLen = DEMO.resay.length / (DEMO_VOICE.cps || 14) * 1000; demoSpeak(DEMO.resay, 60000); } DEMO.resay = null; } else speechSynthesis.resume(); } if(demoTrack.el && DEMO_VOICE.on) demoTrack.el.play().catch(()=>{}); }
   if(b){ b.textContent = DEMO.paused ? "▶ Play" : "⏸ Pause"; b.classList.toggle("on", !!DEMO.paused); }
   demoBar.classList.toggle("paused", !!DEMO.paused); }
 document.getElementById("demoPause").onclick = ()=>demoTogglePause();
@@ -4886,7 +4886,7 @@ function demoSpeak(text, slotMs){ if(!hasTTS || !DEMO_VOICE.on || !text) return;
   const v = demoPickVoice(), say = demoSayText(text), parts = (say.match(/[^.!?]+[.!?]*/g) || [say]).map(p=>p.trim()).filter(Boolean);   /* short pieces: some browsers stop long utterances */
   const need = say.length / DEMO_VOICE.cps, have = (slotMs||8000)/1000 * 0.9, rate = Math.max(1, Math.min(1.35, need/have));
   parts.forEach(p=>{ const u = new SpeechSynthesisUtterance(p); if(v){ u.voice = v; u.lang = v.lang; } else u.lang = "en-US"; u.rate = rate; u.pitch = 1.0;
-    let t0 = 0; u.onstart = ()=>{ t0 = performance.now(); };
+    let t0 = 0; u.onstart = ()=>{ t0 = performance.now(); DEMO.voiceHeard = t0; DEMO_VOICE.startsOk = true; };
     u.onend = ()=>{ if(t0 && p.length > 20){ const sec = (performance.now()-t0)/1000 * u.rate; if(sec > 0.4) DEMO_VOICE.cps = DEMO_VOICE.cps*0.6 + (p.length/sec)*0.4; } };
     speechSynthesis.speak(u); }); }
 demoVoiceLabel();
@@ -5589,7 +5589,8 @@ async function recPlay(rec, opts={}){
       if(seeking || DEMO.paused){ /* staged equipment stays out of view while paused (stageHide) */ lastNow = performance.now(); if(DEMO.paused) DEMO.t0 = lastNow - v; requestAnimationFrame(step); return; }
       if(sk && !dragging) sk.value = Math.round(v);
       const now = performance.now(), dt = Math.min(100, now - lastNow); lastNow = now;
-      const speaking = speechBusy() || now < speakUntil, next = anchorAfter();
+      if(speechBusy() && DEMO.sayAt && !DEMO.voiceStuck && ((DEMO_VOICE.startsOk && now - DEMO.sayAt > 4000 && !(DEMO.voiceHeard >= DEMO.sayAt)) || now - DEMO.sayAt > (DEMO.sayLen || 8000) * 1.8 + 6000)){ speechSynthesis.cancel(); DEMO.sayAt = 0; DEMO.voiceStuck = true; }   /* a voice that never starts, or never reports the end (some browsers after a long pause), must not hold the lesson */
+      const speaking = (speechBusy() && !DEMO.voiceStuck) || now < speakUntil, next = anchorAfter();
       // elastic clock: never pass the next action or line while the current line is still being spoken
       let nv = v + dt * (window.__lessonSpeed || 1);   /* __lessonSpeed: test hook only */
       if(speaking && nv > next - 200) nv = Math.max(v, next - 200);
@@ -5610,7 +5611,7 @@ async function recPlay(rec, opts={}){
         doEvent(ev); if(["click","tap","release"].includes(ev.k)) rp.lastAct = v; ei++;
         if(ev.sel==="#padBtn" && pad.classList.contains("open")){ focus = null; pad.classList.remove("demo-away"); }   /* "Open the iPad": show it now, not after the hardware close-up ends */ }
       while(ci < caps.length && caps[ci].t*1000 <= v){ const c = caps[ci++];
-        if(c.say){ demoCap.textContent = c.say; rp.capAt = v; rp.capDone = c.done || ""; rp.capClr = false; rp.capImp = /^(?:(?:now|then|next|first|finally|so|ok|back on the ipad|on the ipad)[,:]?\s+)?(?:select|tap|open|press|choose|click|enter|type|turn|insert|remove|close|put|return|go back|fold|place|lift|take|unplug|plug|join|start|stop|apply|scan|hold|mount|unmount|switch|add)\b/i.test(c.say); if(DEMO_VOICE.on) demoSpeak(c.say, 60000); speakUntil = now + Math.max(DEMO_VOICE.on && hasTTS ? 300 : 0, c.say.split(/\s+/).length / 2.6 * 1000 * (DEMO_VOICE.on && hasTTS ? 0.85 : 1) / (window.__lessonSpeed || 1) + 300); }
+        if(c.say){ demoCap.textContent = c.say; rp.capAt = v; rp.capDone = c.done || ""; rp.capClr = false; rp.capImp = /^(?:(?:now|then|next|first|finally|so|ok|back on the ipad|on the ipad)[,:]?\s+)?(?:select|tap|open|press|choose|click|enter|type|turn|insert|remove|close|put|return|go back|fold|place|lift|take|unplug|plug|join|start|stop|apply|scan|hold|mount|unmount|switch|add)\b/i.test(c.say); if(DEMO_VOICE.on){ DEMO.voiceStuck = false; DEMO.lastSay = c.say; DEMO.sayAt = now; DEMO.sayLen = c.say.length / (DEMO_VOICE.cps || 14) * 1000; demoSpeak(c.say, 60000); } speakUntil = now + Math.max(DEMO_VOICE.on && hasTTS ? 300 : 0, c.say.split(/\s+/).length / 2.6 * 1000 * (DEMO_VOICE.on && hasTTS ? 0.85 : 1) / (window.__lessonSpeed || 1) + 300); }
         if(c.look && LOOKB[c.look[0]]){ const bx = LOOKB[c.look[0]](); if(!bx.isEmpty()) focus = {bx: LOOKB[c.look[0]], o: null, w: bx.getCenter(new THREE.Vector3()), dist: c.look[1] || 1.4, until: v + (c.look[2] || 7)*1000, elev: c.look[3], az: c.look[4]}; } else if(c.look){ const o = LOOK[c.look[0]] && LOOK[c.look[0]](); if(o){ const w = new THREE.Vector3(); o.getWorldPosition(w); focus = {o, w, dist: c.look[1] || 1.4, until: v + (c.look[2] || 7)*1000, elev: c.look[3], az: c.look[4]};
             /* point at the part the line is about, unless an action is about to take the pointer elsewhere */
             if(!(ei < evs.length && evs[ei].t - v < 1500) && c.look[0]!=="case"){ const p = recWorldPt([w.x,w.y,w.z]); demoMove(p.x, p.y, 700).catch(()=>{}); rp.follow = {o, at: performance.now()}; } } }
