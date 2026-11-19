@@ -4742,7 +4742,7 @@ function demoLayout(){ if(!DEMO.on){ document.body.classList.remove("demo-on"); 
   if(typeof resize==="function") resize(); }
 addEventListener("resize", ()=>{ if(DEMO.on) demoLayout(); });
 setInterval(()=>{ const on = document.body.classList.contains("demo-on"); if(DEMO.on !== on || (DEMO.on && Math.abs((demoBar.offsetHeight||48) - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--demoBarH")||48)) > 1)) demoLayout(); }, 300);
-function demoClock(){ if(!DEMO.on) return; if(DEMO.paused){ requestAnimationFrame(demoClock); return; } const sk = document.getElementById("demoSeek"); if(sk && (document.activeElement === sk || DEMO.dragging)){ requestAnimationFrame(demoClock); return; } const sec = DEMO.rec && DEMO.rec.narrDur ? Math.floor((DEMO.wall||0)/1000) : Math.floor((performance.now()-DEMO.t0)/1000/DEMO.scale); document.getElementById("demoClock").textContent = `${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`; requestAnimationFrame(demoClock); }
+function demoClock(){ if(!DEMO.on) return; const sk = document.getElementById("demoSeek"); if(DEMO.dragging){ requestAnimationFrame(demoClock); return; }   /* while dragging, the clock shows the time under the knob */ const sec = DEMO.rec && DEMO.rec.narrDur ? Math.floor((DEMO.wall||0)/1000) : Math.floor((performance.now()-DEMO.t0)/1000/DEMO.scale); document.getElementById("demoClock").textContent = `${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`; requestAnimationFrame(demoClock); }
 // before each step, make sure what the earlier steps should have done is in place (a missed click never derails the lesson)
 // line the iPad camera up with the QR code on the rear label (as a trainee would by moving the view)
 function demoAimQR(){ const vf = document.getElementById("vf"), guide = document.getElementById("vfguide"); if(!vf || !guide) return;
@@ -4845,6 +4845,7 @@ function demoTogglePause(force){
   if(want){ DEMO.paused = true; DEMO.pauseAt = now; DEMO.resay = null; if(hasTTS && (speechSynthesis.speaking || speechSynthesis.pending)){ if(DEMO.rec){ DEMO.resay = DEMO.lastSay || null; speechSynthesis.cancel(); } else speechSynthesis.pause(); }   /* a paused voice can stay stuck in some browsers after a long pause, so it is stopped and the line is said again on Play */ if(demoTrack.el) demoTrack.el.pause(); demoCur.classList.remove("hold"); }
   else { const d = now - (DEMO.pauseAt || now); DEMO.paused = false; if(!DEMO.rec) DEMO.t0 += d; if(hasTTS){ if(DEMO.rec){ speechSynthesis.cancel(); DEMO.voiceStuck = false; if(DEMO.resay && DEMO_VOICE.on){ DEMO.sayAt = now; DEMO.sayLen = DEMO.resay.length / (DEMO_VOICE.cps || 14) * 1000; demoSpeak(DEMO.resay, 60000); } DEMO.resay = null; } else speechSynthesis.resume(); } if(demoTrack.el && DEMO_VOICE.on) demoTrack.el.play().catch(()=>{}); }
   if(b){ b.textContent = DEMO.paused ? "▶ Play" : "⏸ Pause"; b.classList.toggle("on", !!DEMO.paused); }
+  { const tp = document.getElementById("demoSeekTip"); if(tp){ if(DEMO.paused && DEMO.knobTip) requestAnimationFrame(()=>DEMO.knobTip()); else tp.hidden = true; } }
   demoBar.classList.toggle("paused", !!DEMO.paused); }
 document.getElementById("demoPause").onclick = ()=>demoTogglePause();
 document.getElementById("demoStop").onclick = ()=>{ DEMO.paused = false; DEMO.stop = true; demoBlock.hidden = true; if(hasTTS) speechSynthesis.cancel(); demoAudioStop(); };
@@ -5578,8 +5579,9 @@ async function recPlay(rec, opts={}){
     let downX = null, hoverVal = null;
     sk.onpointerdown = e=>{ dragging = true; DEMO.dragging = true; downX = e.clientX; hoverVal = valAt(e.clientX); };
     sk.onpointermove = e=>{ if(dragging) showTip(+sk.value, knobX()); else showTip(valAt(e.clientX), e.clientX); };
-    sk.onpointerleave = ()=>{ if(!dragging) tip.hidden = true; };
-    sk.onchange = ()=>{ dragging = false; DEMO.dragging = false; tip.hidden = true;
+    sk.onpointerleave = ()=>{ if(!dragging){ if(DEMO.paused) DEMO.knobTip(); else tip.hidden = true; } };
+    DEMO.knobTip = ()=>{ showTip(+sk.value, knobX()); tip.textContent = document.getElementById("demoClock").textContent; };   /* paused: the time stays shown above the knob */
+    sk.onchange = ()=>{ dragging = false; DEMO.dragging = false; tip.hidden = true; sk.blur();
       if(downX !== null && hoverVal !== null && Math.abs(knobX() - downX) < 24) sk.value = Math.round(hoverVal);   /* a plain click jumps to exactly the time the bubble showed */
       downX = hoverVal = null; DEMO.seek(+sk.value); };
     sk.onpointerup = sk.onpointercancel = ()=>{ setTimeout(()=>{ if(dragging && !seeking){ dragging = false; DEMO.dragging = false; tip.hidden = true; } }, 400); }; }
