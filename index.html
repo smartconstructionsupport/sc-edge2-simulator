@@ -4967,7 +4967,9 @@ setInterval(()=>{ const a = demoTrack.el; if(!a || !DEMO.on) return; const want 
   if(DEMO.busy && a.paused) return; if(want >= 0 && a.duration && want < a.duration && Math.abs(a.currentTime - want) > 0.35) a.currentTime = want; }, 1000);
 /* ---------- Demo voice: the browser's own text-to-speech reads each line on its timecode ---------- */
 const DEMO_VOICE = { on: (()=>{ try { return localStorage.getItem("edge2-demo-voice")!=="off"; } catch(e){ return true; } })(),
-  name: (()=>{ try { return localStorage.getItem("edge2-demo-voicename") || ""; } catch(e){ return ""; } })() };
+  name: (()=>{ try { return localStorage.getItem("edge2-demo-voicename") || ""; } catch(e){ return ""; } })(),
+  /* "rec": recorded voice where a lesson has one (default); "tts": always the browser voice chosen below */
+  src: (()=>{ try { return localStorage.getItem("edge2-demo-voicesrc") || "rec"; } catch(e){ return "rec"; } })() };
 const hasTTS = typeof window.speechSynthesis!=="undefined" && typeof SpeechSynthesisUtterance!=="undefined";
 function demoVoices(){ if(!hasTTS) return []; return speechSynthesis.getVoices().filter(v=>/^en(-|_|$)/i.test(v.lang)); }
 function demoPickVoice(){ const vs = demoVoices(); if(!vs.length) return null; const byName = vs.find(v=>v.name===DEMO_VOICE.name); if(byName) return byName;
@@ -4987,7 +4989,9 @@ function demoRecommend(){ const ua = navigator.userAgent, vs = demoVoices(), fin
    a line without a clip (e.g. after its text was edited) falls back to the browser voice. Clips live in DEMO_CLIPS (filled at the end of the page). ---------- */
 const voxEl = new Audio(); voxEl.preload = "auto";
 voxEl.addEventListener("playing", ()=>{ DEMO.voiceHeard = performance.now(); DEMO_VOICE.startsOk = true; });
-function voxClip(text){ const L = typeof DEMO_CLIPS !== "undefined" && DEMO.id && DEMO_CLIPS[DEMO.id]; return L ? L[text] || null : null; }
+function voxAny(){ return typeof DEMO_CLIPS !== "undefined" && Object.values(DEMO_CLIPS).some(o=>o && Object.keys(o).length); }
+function voxHas(id){ return typeof DEMO_CLIPS !== "undefined" && !!DEMO_CLIPS[id] && Object.keys(DEMO_CLIPS[id]).length > 0; }
+function voxClip(text){ if(DEMO_VOICE.src === "tts") return null; const L = typeof DEMO_CLIPS !== "undefined" && DEMO.id && DEMO_CLIPS[DEMO.id]; return L ? L[text] || null : null; }
 function voxBusy(){ return !!voxEl.src && !voxEl.paused && !voxEl.ended; }
 function voxStop(){ try { voxEl.pause(); } catch(e){} DEMO.voxResume = null; }
 function voxPlay(text){ const c = voxClip(text); if(!c) return false; try { voxEl.pause(); voxEl.src = c; voxEl.currentTime = 0; voxEl.playbackRate = Math.max(0.5, Math.min(4, window.__lessonSpeed || 1)); voxEl.play().catch(()=>{}); } catch(e){ return false; } return true; }
@@ -5858,18 +5862,20 @@ function demoLen(steps){ const l = steps[steps.length-1]; return l.t + l.len; }
 function showDemoPanel(){ DEMO.mode = true; modePick.hidden = true;
   const all = (typeof SCN!=="undefined" ? SCN : []);
   const rows = all.map(sc=>{ const lib = DEMO_LIB.find(x=>x.id===sc.id); const sec = DEMO_REC[sc.id] ? Math.round(DEMO_REC[sc.id].duration/1000) : lib ? demoLen(lib.steps()) : 0;
-    return `<li class="${lib?"":"soon"}"><span><b>${esc(sc.name)}</b><small>${esc(sc.grp)}${DEMO_REC[sc.id] ? " · 🎬 recorded demo" : DEMO_AUDIO[sc.id] ? " · 🎙 recorded narration" : ""}</small></span>${lib ? `<button type="button" class="primary" data-demo="${sc.id}">▶ Play <small>${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}</small></button>` : `<em>Demo coming soon</em>`}</li>`; }).join("");
+    return `<li class="${lib?"":"soon"}"><span><b>${esc(sc.name)}</b><small>${esc(sc.grp)}${DEMO_REC[sc.id] ? " · 🎬 recorded demo" : DEMO_AUDIO[sc.id] ? " · 🎙 recorded narration" : ""}${DEMO_REC[sc.id] && voxHas(sc.id) ? " · 🎙 recorded voice" : ""}</small></span>${lib ? `<button type="button" class="primary" data-demo="${sc.id}">▶ Play <small>${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}</small></button>` : `<em>Demo coming soon</em>`}</li>`; }).join("");
   demoPanel.innerHTML = `<div class="dph"><h2>Tutorial mode</h2><button type="button" id="demoExit"><i aria-hidden="true">⇄</i> Change mode</button></div>
-    ${hasTTS ? `<div class="dprec">💡 ${demoRecommend().text}${demoRecommend().voice && demoPickVoice() && demoRecommend().voice.name!==demoPickVoice().name ? ` <button type="button" id="dpUseRec">Use it</button>` : ""}</div><div class="dpv"><label><input type="checkbox" id="dpVoiceOn" ${DEMO_VOICE.on?"checked":""}> 🔊 Read the narration aloud</label>
-      <select id="dpVoice" aria-label="Voice">${demoVoices().map(v=>`<option value="${esc(v.name)}" ${demoPickVoice()&&demoPickVoice().name===v.name?"selected":""}>${esc(v.name)} (${esc(v.lang)})</option>`).join("") || "<option>Default voice</option>"}</select>
-      <button type="button" id="dpVoiceTest">Test voice</button></div>` : `<p class="small">This browser has no built-in voice, so demos play with captions only.</p>`}
+    ${hasTTS || voxAny() ? `${hasTTS && (DEMO_VOICE.src === "tts" || !voxAny()) ? `<div class="dprec">💡 ${demoRecommend().text}${demoRecommend().voice && demoPickVoice() && demoRecommend().voice.name!==demoPickVoice().name ? ` <button type="button" id="dpUseRec">Use it</button>` : ""}</div>` : ""}<div class="dpv"><label><input type="checkbox" id="dpVoiceOn" ${DEMO_VOICE.on?"checked":""}> 🔊 Read the narration aloud</label>
+      <select id="dpVoice" aria-label="Voice">${voxAny() ? `<option value="__rec__" ${DEMO_VOICE.src!=="tts"?"selected":""}>🎙 Recorded voice (Ava)</option>` : ""}${hasTTS ? (voxAny() ? `<optgroup label="Browser voices">` : "") + demoVoices().map(v=>`<option value="${esc(v.name)}" ${(DEMO_VOICE.src==="tts" || !voxAny()) && demoPickVoice()&&demoPickVoice().name===v.name?"selected":""}>${esc(v.name)} (${esc(v.lang)})</option>`).join("") + (voxAny() ? `</optgroup>` : "") : ""}${!hasTTS && !voxAny() ? "<option>Default voice</option>" : ""}</select>
+      <button type="button" id="dpVoiceTest">Test voice</button></div>${voxAny() && DEMO_VOICE.src!=="tts" ? `<p class="small">Lessons without a recording use this browser's voice.</p>` : ""}` : `<p class="small">This browser has no built-in voice, so demos play with captions only.</p>`}
     <p>Press <b>Play</b> to watch a scenario from start to finish. The mouse and the simulator move by themselves; you can't click while it plays. Press <b>■ Stop demo</b> (or Esc) to stop.</p><ul class="dpl">${rows}</ul>`;
   demoPanel.hidden = false;
   demoPanel.querySelectorAll("[data-demo]").forEach(b=>b.onclick = ()=>{ demoPanel.hidden = true; voxUnlock(); const r = DEMO_REC[b.dataset.demo]; if(r) recPlay(r); else demoPlay(b.dataset.demo); });
-  if(hasTTS){ const on = document.getElementById("dpVoiceOn"), sel = document.getElementById("dpVoice"), tb = document.getElementById("dpVoiceTest");
+  if(hasTTS || voxAny()){ const on = document.getElementById("dpVoiceOn"), sel = document.getElementById("dpVoice"), tb = document.getElementById("dpVoiceTest");
     on.onchange = ()=>{ DEMO_VOICE.on = on.checked; try { localStorage.setItem("edge2-demo-voice", DEMO_VOICE.on?"on":"off"); } catch(e){} demoVoiceLabel(); };
-    sel.onchange = ()=>{ DEMO_VOICE.name = sel.value; try { localStorage.setItem("edge2-demo-voicename", sel.value); } catch(e){} };
-    tb.onclick = ()=>{ const was = DEMO_VOICE.on; DEMO_VOICE.on = true; speechSynthesis.cancel(); demoSpeak("Hi! This is how the narration will sound in the demo.", 6000); DEMO_VOICE.on = was; };
+    sel.onchange = ()=>{ if(sel.value === "__rec__") DEMO_VOICE.src = "rec"; else { DEMO_VOICE.src = "tts"; DEMO_VOICE.name = sel.value; try { localStorage.setItem("edge2-demo-voicename", sel.value); } catch(e){} }
+      try { localStorage.setItem("edge2-demo-voicesrc", DEMO_VOICE.src); } catch(e){} showDemoPanel(); };
+    tb.onclick = ()=>{ ttsCancel(); if(sel.value === "__rec__"){ const first = Object.values(DEMO_CLIPS).map(o=>Object.values(o)[0]).find(Boolean); if(first){ voxEl.src = first; voxEl.currentTime = 0; voxEl.playbackRate = 1; voxEl.play().catch(()=>{}); } return; }
+      if(!hasTTS) return; const was = DEMO_VOICE.on; DEMO_VOICE.on = true; demoSpeak("Hi! This is how the narration will sound in the demo.", 6000); DEMO_VOICE.on = was; };
     const rb = document.getElementById("dpUseRec"); if(rb) rb.onclick = ()=>{ const r = demoRecommend(); if(r.voice){ DEMO_VOICE.name = r.voice.name; try { localStorage.setItem("edge2-demo-voicename", r.voice.name); } catch(e){} showDemoPanel(); } }; }
   document.getElementById("demoExit").onclick = ()=>{ DEMO.mode = false; demoPanel.hidden = true; modePick.hidden = false; }; }
 document.getElementById("pickDemo").onclick = ()=>showDemoPanel();
