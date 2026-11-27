@@ -5558,6 +5558,24 @@ function droneLink(kind){ if(kind==="rg"){ S.rtkGuide = true; droneState = ""; s
   else { flyTicks = flyTicks.map(()=>true); droneState = ""; } }
 document.addEventListener("click", e=>{ if(!e.target.closest("#demoFull")) return; try { if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(()=>{}); } catch(err){} }, true);
 function speechBusy(){ return DEMO_VOICE.on && (voxBusy() || (hasTTS && (speechSynthesis.speaking || speechSynthesis.pending))); }
+/* Fixed clock plan for a recording (null when its lesson has no complete recorded voice); cached per recording */
+function fixPlan(rec){ if(rec.__fix !== undefined) return rec.__fix; const r = (()=>{ const caps = (rec.captions || []).slice().sort((a,b)=>a.t-b.t), evs = rec.events.slice().sort((a,b)=>a.t-b.t), keepFrom = (rec.keep || []).map(k=>[k[0]*1000, k[1]*1000]);
+ if(!voxFixedOk(rec.scenario)) return null;
+    const presses = []; evs.forEach((e,i)=>{ if(e.k==="press"){ const r = evs.slice(i+1).find(x=>x.k==="release"); presses.push([e.t, r ? r.t : e.t]); } });
+    const tot = Math.max(rec.duration, ...caps.map(x=>x.t*1000 + 3000)); let vv = Math.max(0, (rec.start || 0)) * 1000, w = 0, spk = 0, a = 0, b = 0; const dt = 50, tab = [[0, vv]], cw = [], cd = [];
+    while(vv < tot && w < 4*3600e3){ const next = Math.min(a < evs.length ? evs[a].t : Infinity, b < caps.length ? caps[b].t*1000 : Infinity), sp = w < spk;
+      let nv = vv + dt; if(sp && nv > next - 200) nv = Math.max(vv, next - 200);
+      const ik = keepFrom.some(([x,y])=>vv >= x && vv < y), held = presses.some(([x,y])=>vv >= x && vv < y);
+      if(!sp && !ik && !held && next !== Infinity && next - nv > 3500) nv = next - 1500;
+      vv = nv; w += dt; while(a < evs.length && evs[a].t <= vv) a++;
+      while(b < caps.length && caps[b].t*1000 <= vv){ const c = caps[b]; if(c.say && w < spk) break; cw[b] = w; if(c.say){ const ms = voxEntry(rec.scenario, c.say).ms; cd[b] = ms; spk = w + ms + 250; } b++; }
+      tab.push([w, vv]); }
+    tab.push([w + 1500, vv + 1500]);
+    const vAt = t=>{ let lo = 0, hi = tab.length - 1; if(t <= tab[0][0]) return tab[0][1]; if(t >= tab[hi][0]) return tab[hi][1]; while(hi - lo > 1){ const m = (lo + hi) >> 1; if(tab[m][0] <= t) lo = m; else hi = m; } const [t0,v0] = tab[lo], [t1,v1] = tab[hi]; return v0 + (v1 - v0) * (t - t0)/((t1 - t0) || 1); };
+    const tAt = vq=>{ for(let i = 1; i < tab.length; i++) if(tab[i][1] >= vq){ const [t0,v0] = tab[i-1], [t1,v1] = tab[i]; return v1 === v0 ? t0 : t0 + (t1 - t0) * (vq - v0)/(v1 - v0); } return tab[tab.length-1][0]; };
+    return {tab, cw, cd, total: w, vAt, tAt}; })(); try{ Object.defineProperty(rec, "__fix", {value: r, configurable: true}); }catch(e){} return r; }
+/* the lesson length shown in the lesson list and on the player bar: the same figure in both places */
+function demoLenLabel(rec){ const f = ms=>{ const t = Math.max(0, Math.round(ms/1000)); return `${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`; }; const F = fixPlan(rec); if(F) return f(F.total); if(rec.narrDur) return "≈ " + f(rec.narrDur); const caps = rec.captions || []; return f(Math.max(rec.duration, ...caps.map(x=>x.t*1000 + 3000))); }
 async function recPlay(rec, opts={}){
   if(!rec || DEMO.on || REC.on) return;
   if(!rec.captions && rec.transcript && rec.transcript.length) rec.captions = rec.transcript.map((x,i,a)=>({t: x.t, len: Math.max(1, ((a[i+1] ? a[i+1].t : x.end + 2) - x.t)), say: x.text}));
@@ -5572,20 +5590,7 @@ async function recPlay(rec, opts={}){
   const keepFrom = (rec.keep || []).map(k=>[k[0]*1000, k[1]*1000]);
   /* Fixed clock (lessons with a recorded voice): the same elastic pacing, worked out once in advance with the real clip lengths,
      gives every moment of the lesson a fixed time, like a video. FIX.tab maps lesson time -> recording time; FIX.cw[i] is when line i starts. */
-  const FIX = (()=>{ if(!voxFixedOk(rec.scenario)) return null;
-    const presses = []; evs.forEach((e,i)=>{ if(e.k==="press"){ const r = evs.slice(i+1).find(x=>x.k==="release"); presses.push([e.t, r ? r.t : e.t]); } });
-    const tot = Math.max(rec.duration, ...caps.map(x=>x.t*1000 + 3000)); let vv = Math.max(0, (rec.start || 0)) * 1000, w = 0, spk = 0, a = 0, b = 0; const dt = 50, tab = [[0, vv]], cw = [], cd = [];
-    while(vv < tot && w < 4*3600e3){ const next = Math.min(a < evs.length ? evs[a].t : Infinity, b < caps.length ? caps[b].t*1000 : Infinity), sp = w < spk;
-      let nv = vv + dt; if(sp && nv > next - 200) nv = Math.max(vv, next - 200);
-      const ik = keepFrom.some(([x,y])=>vv >= x && vv < y), held = presses.some(([x,y])=>vv >= x && vv < y);
-      if(!sp && !ik && !held && next !== Infinity && next - nv > 3500) nv = next - 1500;
-      vv = nv; w += dt; while(a < evs.length && evs[a].t <= vv) a++;
-      while(b < caps.length && caps[b].t*1000 <= vv){ const c = caps[b]; if(c.say && w < spk) break; cw[b] = w; if(c.say){ const ms = voxEntry(rec.scenario, c.say).ms; cd[b] = ms; spk = w + ms + 250; } b++; }
-      tab.push([w, vv]); }
-    tab.push([w + 1500, vv + 1500]);
-    const vAt = t=>{ let lo = 0, hi = tab.length - 1; if(t <= tab[0][0]) return tab[0][1]; if(t >= tab[hi][0]) return tab[hi][1]; while(hi - lo > 1){ const m = (lo + hi) >> 1; if(tab[m][0] <= t) lo = m; else hi = m; } const [t0,v0] = tab[lo], [t1,v1] = tab[hi]; return v0 + (v1 - v0) * (t - t0)/((t1 - t0) || 1); };
-    const tAt = vq=>{ for(let i = 1; i < tab.length; i++) if(tab[i][1] >= vq){ const [t0,v0] = tab[i-1], [t1,v1] = tab[i]; return v1 === v0 ? t0 : t0 + (t1 - t0) * (vq - v0)/(v1 - v0); } return tab[tab.length-1][0]; };
-    return {tab, cw, cd, total: w, vAt, tAt}; })();
+  const FIX = fixPlan(rec);
   DEMO.fixed = !!FIX; DEMO.fix = FIX; DEMO.voxWait = 0;   /* DEMO.fix: test hook */
   const sm = {p: camera.position.clone(), g: controls.target.clone()};
   const rp = {pressT:null, pressPw:null, typed:{}}; let cursorFor = -1, done = false, focus = null;
@@ -5674,7 +5679,7 @@ async function recPlay(rec, opts={}){
   const fmt = ms=>{ const t = Math.max(0, Math.round(ms/1000)); return `${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`; };
   const total = Math.max(rec.duration, ...caps.map(x=>x.t*1000 + 3000));
   const sk = document.getElementById("demoSeek"), skw = document.getElementById("demoSeekWrap");
-  if(sk){ sk.max = Math.round(FIX ? FIX.total : total); sk.value = 0; skw.hidden = false; document.getElementById("demoDur").textContent = FIX ? fmt(FIX.total) : rec.narrDur ? "≈ " + fmt(rec.narrDur) : fmt(total); skw.title = FIX ? "Lesson time (fixed, like a video)" : rec.narrDur ? "Playing time with narration (approximate; depends on the voice). The slider moves through the lesson steps." : ""; }
+  if(sk){ sk.max = Math.round(FIX ? FIX.total : total); sk.value = 0; skw.hidden = false; document.getElementById("demoDur").textContent = demoLenLabel(rec); skw.title = FIX ? "Lesson time (fixed, like a video)" : rec.narrDur ? "Playing time with narration (approximate; depends on the voice). The slider moves through the lesson steps." : ""; }
   DEMO.wall = 0; const wRatio = FIX ? 1 : rec.narrDur && total ? rec.narrDur/total : 1;
   let seeking = false, dragging = false;
   // while jumping, recorded time passes in an instant: age every timer the simulator waits on by the recorded gap
@@ -5899,7 +5904,7 @@ function demoLen(steps){ const l = steps[steps.length-1]; return l.t + l.len; }
 function showDemoPanel(){ DEMO.mode = true; modePick.hidden = true;
   const all = (typeof SCN!=="undefined" ? SCN : []);
   const rows = all.map(sc=>{ const lib = DEMO_LIB.find(x=>x.id===sc.id); const sec = DEMO_REC[sc.id] ? Math.round(DEMO_REC[sc.id].duration/1000) : lib ? demoLen(lib.steps()) : 0;
-    return `<li class="${lib?"":"soon"}"><span><b>${esc(sc.name)}</b><small>${esc(sc.grp)}${DEMO_REC[sc.id] ? " · 🎬 recorded demo" : DEMO_AUDIO[sc.id] ? " · 🎙 recorded narration" : ""}${DEMO_REC[sc.id] && voxHas(sc.id) ? " · 🎙 recorded voice" : ""}</small></span>${lib ? `<button type="button" class="primary" data-demo="${sc.id}">▶ Play <small>${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}</small></button>` : `<em>Demo coming soon</em>`}</li>`; }).join("");
+    return `<li class="${lib?"":"soon"}"><span><b>${esc(sc.name)}</b><small>${esc(sc.grp)}${!DEMO_REC[sc.id] && DEMO_AUDIO[sc.id] ? " · 🎙 recorded narration" : ""}${DEMO_REC[sc.id] && voxHas(sc.id) ? " · 🎙 recorded voice" : ""}</small></span>${lib ? `<button type="button" class="primary" data-demo="${sc.id}">▶ Play <small>${DEMO_REC[sc.id] ? demoLenLabel(DEMO_REC[sc.id]) : `${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`}</small></button>` : `<em>Demo coming soon</em>`}</li>`; }).join("");
   demoPanel.innerHTML = `<div class="dph"><h2>Tutorial mode</h2><button type="button" id="demoExit"><i aria-hidden="true">⇄</i> Change mode</button></div>
     ${hasTTS || voxAny() ? `${hasTTS && (DEMO_VOICE.src === "tts" || !voxAny()) ? `<div class="dprec">💡 ${demoRecommend().text}${demoRecommend().voice && demoPickVoice() && demoRecommend().voice.name!==demoPickVoice().name ? ` <button type="button" id="dpUseRec">Use it</button>` : ""}</div>` : ""}<div class="dpv"><label><input type="checkbox" id="dpVoiceOn" ${DEMO_VOICE.on?"checked":""}> 🔊 Read the narration aloud</label>
       <select id="dpVoice" aria-label="Voice">${voxAny() ? `<option value="__rec__" ${DEMO_VOICE.src!=="tts"?"selected":""}>🎙 Recorded voice (Ava)</option>` : ""}${hasTTS ? (voxAny() ? `<optgroup label="Browser voices">` : "") + demoVoices().map(v=>`<option value="${esc(v.name)}" ${(DEMO_VOICE.src==="tts" || !voxAny()) && demoPickVoice()&&demoPickVoice().name===v.name?"selected":""}>${esc(v.name)} (${esc(v.lang)})</option>`).join("") + (voxAny() ? `</optgroup>` : "") : ""}${!hasTTS && !voxAny() ? "<option>Default voice</option>" : ""}</select>
